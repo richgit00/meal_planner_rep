@@ -55,8 +55,13 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Seed database on startup
-  await seedDatabase();
+  // Seed database on startup with error handling
+  try {
+    await seedDatabase();
+  } catch (error) {
+    console.error("Warning: Database seeding failed, but continuing with app startup:", error.message);
+    console.log("The app will still function, but may not have initial data loaded.");
+  }
 
    await registerRoutes(app);
 
