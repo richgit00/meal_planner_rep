@@ -63,8 +63,6 @@ const addWeeks = (dateString: string, weeks: number) => {
   return date.toISOString().split('T')[0];
 };
 
-const DAYS_OF_WEEK = getWeekDates;
-
 export default function MealPlan() {
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
@@ -109,7 +107,8 @@ export default function MealPlan() {
     },
   });
 
-  const currentMeals = mealPlan?.meals || DAYS_OF_WEEK.map(day => ({ day: day.name, mealId: null }));
+  const weekDays = getWeekDates(currentWeek);
+  const currentMeals = mealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
 
   const handleDayClick = (dayName: string) => {
     setSelectedDay(dayName);
@@ -196,7 +195,7 @@ export default function MealPlan() {
 
       {/* Weekly Calendar Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 mb-8">
-        {DAYS_OF_WEEK(currentWeek).map((day) => {
+        {weekDays.map((day) => {
           const dayMeal = currentMeals.find(m => m.day === day.name);
           const meal = dayMeal?.mealId ? meals.find(m => m.id === dayMeal.mealId) : null;
 
