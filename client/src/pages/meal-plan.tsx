@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, Save, ShoppingCart, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, ShoppingCart, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MealSelectionModal } from "@/components/meal-selection-modal";
@@ -140,6 +140,21 @@ export default function MealPlan() {
     }
   };
 
+  const handleMealDelete = (dayName: string) => {
+    const updatedMeals = currentMeals.map(dayMeal =>
+      dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
+    );
+
+    if (mealPlan) {
+      updateMealPlanMutation.mutate({ id: mealPlan.id, meals: updatedMeals });
+    } else {
+      createMealPlanMutation.mutate({
+        weekStartDate: currentWeek,
+        meals: updatedMeals,
+      });
+    }
+  };
+
   const saveMealPlan = () => {
     if (mealPlan) {
       updateMealPlanMutation.mutate({ id: mealPlan.id, meals: currentMeals });
@@ -211,20 +226,33 @@ export default function MealPlan() {
                   onClick={() => handleDayClick(day.name)}
                 >
                   {meal ? (
-                    <div
-                      className="space-y-2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMealClick(meal.id);
-                      }}
-                    >
-                      <img
-                        src={meal.image}
-                        alt={meal.name}
-                        className="w-full h-20 object-cover rounded-lg"
-                      />
-                      <h4 className="font-medium text-slate-800 text-sm">{meal.name}</h4>
-                      <p className="text-xs text-slate-500">{meal.cookTime}</p>
+                    <div className="space-y-2 relative">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-1 right-1 h-6 w-6 p-0 z-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMealDelete(day.name);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                      <div
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMealClick(meal.id);
+                        }}
+                      >
+                        <img
+                          src={meal.image}
+                          alt={meal.name}
+                          className="w-full h-20 object-cover rounded-lg"
+                        />
+                        <h4 className="font-medium text-slate-800 text-sm">{meal.name}</h4>
+                        <p className="text-xs text-slate-500">{meal.cookTime}</p>
+                      </div>
                     </div>
                   ) : (
                     <div>
