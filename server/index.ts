@@ -5,9 +5,9 @@ import { meals } from '@shared/schema';  // your meals table schema
 async function testConnection() {
   try {
     const rows = await db.select().from(meals).limit(6);
-    console.log('✅ Supabase connected! Sample meals:', rows);
+    console.log('✅ Database connected! Sample meals:', rows);
   } catch (error) {
-    console.error('❌ Supabase connection failed:', error);
+    console.error('❌ Database connection failed:', error);
   }
 }
 
