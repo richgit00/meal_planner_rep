@@ -449,7 +449,8 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
-        ))}</div>
+        ))}
+      </div>
 
       {selectedRecipe && (
         <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipe(null)}>
@@ -486,9 +487,6 @@ export default function Admin() {
           </DialogContent>
         </Dialog>
       )}
-      </div>
-
-
     </div>
   );
 }
