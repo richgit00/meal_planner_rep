@@ -207,38 +207,7 @@ export default function Admin() {
             <Download className="h-4 w-4 mr-2" />
             Export Meals
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Import
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Bulk Import Meals</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="bulk-import">JSON Data</Label>
-                  <Textarea
-                    id="bulk-import"
-                    placeholder="Paste JSON array of meals here..."
-                    value={bulkImportText}
-                    onChange={(e) => setBulkImportText(e.target.value)}
-                    className="min-h-[200px] font-mono text-sm"
-                  />
-                </div>
-                <Button 
-                  onClick={handleBulkImport} 
-                  disabled={bulkImportMutation.isPending}
-                  className="w-full"
-                >
-                  Import Meals
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
@@ -440,34 +409,7 @@ export default function Admin() {
         ))}
       </div>
 
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Import Format Example</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <pre className="bg-slate-100 p-4 rounded-lg text-sm overflow-x-auto">
-{`[
-  {
-    "name": "Example Meal",
-    "description": "A delicious example meal",
-    "cookTime": "30 mins",
-    "difficulty": "Easy",
-    "servings": 4,
-    "image": "https://example.com/image.jpg",
-    "ingredients": [
-      {"name": "Chicken", "amount": "2 lbs", "category": "fresh"},
-      {"name": "Salt", "amount": "1 tsp", "category": "pantry"}
-    ],
-    "instructions": [
-      "Preheat oven to 350°F",
-      "Season chicken with salt",
-      "Bake for 25 minutes"
-    ]
-  }
-]`}
-          </pre>
-        </CardContent>
-      </Card>
+      
     </div>
   );
 }
