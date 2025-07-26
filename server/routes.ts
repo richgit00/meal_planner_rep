@@ -121,16 +121,19 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.post("/api/meal-plans", async (req, res) => {
     try {
+      console.log("Creating meal plan with data:", req.body);
       const validated = insertMealPlanSchema.parse(req.body);
       const [mealPlan] = await db.insert(mealPlans).values(validated).returning();
       res.status(201).json(mealPlan);
     } catch (error) {
-      res.status(400).json({ message: "Invalid meal plan data" });
+      console.error("Meal plan creation error:", error);
+      res.status(400).json({ message: "Invalid meal plan data", error: error.message });
     }
   });
 
   app.put("/api/meal-plans/:id", async (req, res) => {
     try {
+      console.log("Updating meal plan with data:", req.body);
       const validated = insertMealPlanSchema.partial().parse(req.body);
       const [mealPlan] = await db.update(mealPlans)
         .set(validated)
@@ -141,7 +144,8 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
       res.json(mealPlan);
     } catch (error) {
-      res.status(400).json({ message: "Invalid meal plan data" });
+      console.error("Meal plan update error:", error);
+      res.status(400).json({ message: "Invalid meal plan data", error: error.message });
     }
   });
 

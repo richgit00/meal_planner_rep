@@ -83,26 +83,30 @@ export default function MealPlan() {
 
   const createMealPlanMutation = useMutation({
     mutationFn: async (newMealPlan: { weekStartDate: string; meals: Array<{ day: string; mealId: string | null }> }) => {
+      console.log("Creating meal plan:", newMealPlan);
       return await apiRequest("POST", "/api/meal-plans", newMealPlan);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
       toast({ title: "Meal plan saved successfully!" });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Meal plan creation failed:", error);
       toast({ title: "Failed to save meal plan", variant: "destructive" });
     },
   });
 
   const updateMealPlanMutation = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; meals: Array<{ day: string; mealId: string | null }> }) => {
+      console.log("Updating meal plan:", { id, updates });
       return await apiRequest("PUT", `/api/meal-plans/${id}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
       toast({ title: "Meal plan updated successfully!" });
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Meal plan update failed:", error);
       toast({ title: "Failed to update meal plan", variant: "destructive" });
     },
   });
