@@ -2,16 +2,16 @@
 import { db } from './db';          // your Drizzle db instance
 import { meals } from '@shared/schema';  // your meals table schema
 
-async function testConnection() {
-  try {
-    const rows = await db.select().from(meals).limit(6);
-    console.log('✅ Database connected! Sample meals:', rows);
-  } catch (error) {
-    console.error('❌ Database connection failed:', error);
-  }
-}
+// async function testConnection() {
+//   try {
+//     const rows = await db.select().from(meals).limit(6);
+//     console.log('✅ Database connected! Sample meals:', rows);
+//   } catch (error) {
+//     console.error('❌ Database connection failed:', error);
+//   }
+// }
 
-testConnection();
+// testConnection();
 
 
 
@@ -56,7 +56,7 @@ app.use((req, res, next) => {
 
 (async () => {
   // Seed database on startup
-  await seedDatabase();
+  // await seedDatabase();
 
    await registerRoutes(app);
 
