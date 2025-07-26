@@ -3,6 +3,7 @@ import { meals, pantryItems } from "@shared/schema";
 
 const initialMeals = [
   {
+    id: "meal-001",
     name: "Grilled Chicken & Vegetables",
     description: "A healthy and delicious meal featuring perfectly grilled chicken breast served with a colorful medley of fresh vegetables.",
     cookTime: "30 mins",
@@ -25,6 +26,7 @@ const initialMeals = [
     ]
   },
   {
+    id: "meal-002",
     name: "Pasta Marinara",
     description: "Fresh pasta with homemade marinara sauce and aromatic herbs.",
     cookTime: "25 mins",
@@ -47,6 +49,7 @@ const initialMeals = [
     ]
   },
   {
+    id: "meal-003",
     name: "Beef Stir Fry",
     description: "Quick and flavorful beef stir fry with crisp vegetables and savory sauce.",
     cookTime: "20 mins",
@@ -69,6 +72,7 @@ const initialMeals = [
     ]
   },
   {
+    id: "meal-004",
     name: "Salmon with Rice",
     description: "Pan-seared salmon served over fluffy rice with lemon and herbs.",
     cookTime: "35 mins",
@@ -91,6 +95,7 @@ const initialMeals = [
     ]
   },
   {
+    id: "meal-005",
     name: "Vegetable Curry",
     description: "Aromatic vegetable curry with coconut milk and warm spices.",
     cookTime: "40 mins",
@@ -115,35 +120,35 @@ const initialMeals = [
 ];
 
 const initialPantryItems = [
-  { name: "Salt", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Black Pepper", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Garlic Powder", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Paprika", category: "Spices & Seasonings", status: "low-stock" },
-  { name: "Cumin", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Curry Powder", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Italian Seasoning", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Chili Powder", category: "Spices & Seasonings", status: "in-stock" },
-  { name: "Dried Oregano", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-001", name: "Salt", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-002", name: "Black Pepper", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-003", name: "Garlic Powder", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-004", name: "Paprika", category: "Spices & Seasonings", status: "low-stock" },
+  { id: "pantry-005", name: "Cumin", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-006", name: "Curry Powder", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-007", name: "Italian Seasoning", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-008", name: "Chili Powder", category: "Spices & Seasonings", status: "in-stock" },
+  { id: "pantry-009", name: "Dried Oregano", category: "Spices & Seasonings", status: "in-stock" },
 
-  { name: "Olive Oil", category: "Cooking Essentials", status: "in-stock" },
-  { name: "Vegetable Oil", category: "Cooking Essentials", status: "in-stock" },
-  { name: "Butter", category: "Cooking Essentials", status: "low-stock" },
-  { name: "Vinegar", category: "Cooking Essentials", status: "in-stock" },
-  { name: "Sesame Oil", category: "Cooking Essentials", status: "in-stock" },
+  { id: "pantry-010", name: "Olive Oil", category: "Cooking Essentials", status: "in-stock" },
+  { id: "pantry-011", name: "Vegetable Oil", category: "Cooking Essentials", status: "in-stock" },
+  { id: "pantry-012", name: "Butter", category: "Cooking Essentials", status: "low-stock" },
+  { id: "pantry-013", name: "Vinegar", category: "Cooking Essentials", status: "in-stock" },
+  { id: "pantry-014", name: "Sesame Oil", category: "Cooking Essentials", status: "in-stock" },
 
-  { name: "Flour", category: "Pantry Staples", status: "in-stock" },
-  { name: "Sugar", category: "Pantry Staples", status: "low-stock" },
-  { name: "Rice", category: "Pantry Staples", status: "in-stock" },
-  { name: "Pasta", category: "Pantry Staples", status: "in-stock" },
-  { name: "Canned Beans", category: "Pantry Staples", status: "in-stock" },
-  { name: "Canned Tomatoes", category: "Pantry Staples", status: "in-stock" },
-  { name: "Breadcrumbs", category: "Pantry Staples", status: "in-stock" },
-  { name: "Soy Sauce", category: "Pantry Staples", status: "in-stock" },
-  { name: "Coconut Milk", category: "Pantry Staples", status: "low-stock" },
-  { name: "Chicken Broth", category: "Pantry Staples", status: "in-stock" },
-  { name: "BBQ Sauce", category: "Pantry Staples", status: "in-stock" },
-  { name: "Marinara Sauce", category: "Pantry Staples", status: "in-stock" },
-  { name: "White Wine", category: "Pantry Staples", status: "in-stock" }
+  { id: "pantry-015", name: "Flour", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-016", name: "Sugar", category: "Pantry Staples", status: "low-stock" },
+  { id: "pantry-017", name: "Rice", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-018", name: "Pasta", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-019", name: "Canned Beans", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-020", name: "Canned Tomatoes", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-021", name: "Breadcrumbs", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-022", name: "Soy Sauce", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-023", name: "Coconut Milk", category: "Pantry Staples", status: "low-stock" },
+  { id: "pantry-024", name: "Chicken Broth", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-025", name: "BBQ Sauce", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-026", name: "Marinara Sauce", category: "Pantry Staples", status: "in-stock" },
+  { id: "pantry-027", name: "White Wine", category: "Pantry Staples", status: "in-stock" }
 ];
 
 export async function seedDatabase() {
