@@ -8,16 +8,22 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Ensure SSL mode is included in connection string
+// Parse the DATABASE_URL to get connection components
 const databaseUrl = process.env.DATABASE_URL;
-const connectionString = databaseUrl?.includes('sslmode=') 
-  ? databaseUrl 
-  : `${databaseUrl}${databaseUrl?.includes('?') ? '&' : '?'}sslmode=require`;
+let connectionConfig;
 
-export const pool = new Pool({ 
-  connectionString,
-  ssl: { 
-    rejectUnauthorized: false 
-  }
-});
+if (databaseUrl) {
+  // Use connection string with SSL override
+  connectionConfig = {
+    connectionString: databaseUrl,
+    ssl: {
+      rejectUnauthorized: false,
+      sslmode: 'require'
+    }
+  };
+} else {
+  throw new Error("DATABASE_URL is required");
+}
+
+export const pool = new Pool(connectionConfig);
 export const db = drizzle({ client: pool, schema });
