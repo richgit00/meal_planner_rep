@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Upload, Download, Save } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -179,16 +179,7 @@ export default function Admin() {
     }
   };
 
-  const exportMeals = () => {
-    const dataStr = JSON.stringify(meals, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'meals.json';
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  
 
   if (isLoading) {
     return (
@@ -203,11 +194,6 @@ export default function Admin() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex space-x-4">
-          <Button onClick={exportMeals} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Meals
-          </Button>
-
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
