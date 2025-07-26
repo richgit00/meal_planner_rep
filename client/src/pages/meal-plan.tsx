@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Save, ShoppingCart, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,6 +22,7 @@ const DAYS_OF_WEEK = [
 
 export default function MealPlan() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [showMealModal, setShowMealModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
@@ -105,6 +107,23 @@ export default function MealPlan() {
     }
   };
 
+  const handleGenerateShoppingList = () => {
+    // Check if there are any meals planned for the week
+    const hasPlannedMeals = currentMeals.some(dayMeal => dayMeal.mealId);
+    
+    if (!hasPlannedMeals) {
+      toast({ 
+        title: "No meals planned", 
+        description: "Please add some meals to your weekly plan first.",
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    // Navigate to shopping list page
+    navigate("/shopping-list");
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -174,7 +193,11 @@ export default function MealPlan() {
           <Save className="h-4 w-4 mr-2" />
           Save Meal Plan
         </Button>
-        <Button variant="outline" className="bg-accent text-white hover:bg-emerald-600">
+        <Button 
+          variant="outline" 
+          className="bg-accent text-white hover:bg-emerald-600"
+          onClick={handleGenerateShoppingList}
+        >
           <ShoppingCart className="h-4 w-4 mr-2" />
           Generate Shopping List
         </Button>
