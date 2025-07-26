@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Moroccan Chicken Tagine",
+    "description": "Aromatic slow-cooked chicken with preserved lemons, olives, and warm spices in a traditional tagine.",
+    "cookTime": "2 hours",
+    "difficulty": "Medium",
+    "servings": 6,
+    "image": "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "ingredients": [
+      { "name": "Whole chicken", "amount": "1 (3-4 lbs)", "category": "fresh" },
+      { "name": "Preserved lemons", "amount": "4 pieces", "category": "pantry" },
+      { "name": "Green olives", "amount": "1 cup", "category": "pantry" },
+      { "name": "Onions", "amount": "2 large", "category": "fresh" },
+      { "name": "Fresh ginger", "amount": "2 tbsp", "category": "fresh" },
+      { "name": "Saffron", "amount": "1/2 tsp", "category": "pantry" },
+      { "name": "Cinnamon stick", "amount": "1", "category": "pantry" }
+    ],
+    "instructions": [
+      "Cut chicken into pieces and season with salt, pepper, and spices.",
+      "Brown chicken pieces in a tagine or heavy pot with olive oil.",
+      "Add sliced onions and cook until softened.",
+      "Add ginger, saffron, and cinnamon stick.",
+      "Add enough water to barely cover chicken.",
+      "Cover and simmer for 1.5 hours until chicken is tender.",
+      "Add preserved lemons and olives in the last 15 minutes.",
+      "Serve with couscous or flatbread."
+    ]
+  },
+  {
+    "name": "Korean BBQ Bulgogi",
+    "description": "Tender marinated beef grilled to perfection with Korean flavors and served with rice.",
+    "cookTime": "45 mins",
+    "difficulty": "Medium",
+    "servings": 4,
+    "image": "https://images.unsplash.com/photo-1529042410759-befb1204b468?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "ingredients": [
+      { "name": "Ribeye steak", "amount": "2 lbs", "category": "fresh" },
+      { "name": "Asian pear", "amount": "1 medium", "category": "fresh" },
+      { "name": "Soy sauce", "amount": "1/2 cup", "category": "pantry" },
+      { "name": "Brown sugar", "amount": "1/4 cup", "category": "pantry" },
+      { "name": "Sesame oil", "amount": "2 tbsp", "category": "pantry" },
+      { "name": "Garlic", "amount": "6 cloves", "category": "fresh" },
+      { "name": "Green onions", "amount": "4 stalks", "category": "fresh" }
+    ],
+    "instructions": [
+      "Slice beef very thinly against the grain.",
+      "Grate Asian pear and mix with soy sauce, brown sugar, and sesame oil.",
+      "Add minced garlic and chopped green onions to marinade.",
+      "Marinate beef for at least 30 minutes or overnight.",
+      "Grill beef on high heat for 2-3 minutes per side.",
+      "Serve immediately with steamed rice and kimchi.",
+      "Garnish with sesame seeds and extra green onions."
+    ]
+  },
+  {
+    "name": "Italian Risotto Milanese",
+    "description": "Creamy saffron risotto with Parmesan cheese, a classic from Northern Italy.",
+    "cookTime": "40 mins",
+    "difficulty": "Hard",
+    "servings": 4,
+    "image": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400",
+    "ingredients": [
+      { "name": "Arborio rice", "amount": "1.5 cups", "category": "pantry" },
+      { "name": "Chicken stock", "amount": "6 cups", "category": "pantry" },
+      { "name": "Saffron threads", "amount": "1/2 tsp", "category": "pantry" },
+      { "name": "White wine", "amount": "1/2 cup", "category": "pantry" },
+      { "name": "Onion", "amount": "1 medium", "category": "fresh" },
+      { "name": "Parmesan cheese", "amount": "1 cup grated", "category": "fresh" },
+      { "name": "Butter", "amount": "4 tbsp", "category": "fresh" }
+    ],
+    "instructions": [
+      "Heat chicken stock and keep warm. Steep saffron in 2 tbsp hot stock.",
+      "Sauté finely chopped onion in 2 tbsp butter until translucent.",
+      "Add rice and stir for 2 minutes until grains are coated.",
+      "Add wine and stir until absorbed.",
+      "Add warm stock one ladle at a time, stirring constantly.",
+      "Continue for 18-20 minutes until rice is creamy but still al dente.",
+      "Stir in saffron mixture, remaining butter, and Parmesan.",
+      "Serve immediately while hot and creamy."
+    ]
+  }
+]
