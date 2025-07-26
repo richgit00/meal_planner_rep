@@ -36,10 +36,14 @@ const isReplit = process.env.REPLIT_DEV_DOMAIN || process.env.REPL_ID;
 
 // Configure SSL based on environment - crucial for Render deployment
 let sslConfig;
+let finalConnectionString = databaseUrl;
 
 if (isReplit) {
   // Replit development environment - disable SSL completely
   sslConfig = false;
+  // Remove SSL requirement from connection string for Replit
+  finalConnectionString = finalConnectionString.replace(/[?&]sslmode=require/, '').replace(/sslmode=require[?&]?/, '');
+  finalConnectionString += finalConnectionString.includes('?') ? '&sslmode=disable' : '?sslmode=disable';
   console.log("🔧 Using Replit development configuration (SSL disabled)");
 } else {
   // Production/Render environment - MUST explicitly set rejectUnauthorized: false
@@ -50,7 +54,7 @@ if (isReplit) {
 }
 
 const connectionConfig = {
-  connectionString: databaseUrl,
+  connectionString: finalConnectionString,
   ssl: sslConfig,
   // Connection pool settings optimized for both Render and Replit
   connectionTimeoutMillis: 15000,
@@ -62,7 +66,8 @@ const connectionConfig = {
   keepAliveInitialDelayMillis: 10000
 };
 
-console.log(`📡 Connecting to database on port ${databaseUrl.includes(':6543') ? '6543 (IPv4)' : '5432 (IPv6)'}`);
+console.log(`📡 Connecting to database on port ${finalConnectionString.includes(':6543') ? '6543 (IPv4)' : '5432 (IPv6)'}`);
+console.log(`🔗 Connection string SSL mode: ${finalConnectionString.includes('sslmode=disable') ? 'disabled' : 'enabled'}`);
 
 export const pool = new Pool(connectionConfig);
 export const db = drizzle({ client: pool, schema });
