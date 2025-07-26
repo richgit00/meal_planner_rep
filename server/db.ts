@@ -32,38 +32,29 @@ if (databaseUrl.includes('.supabase.com')) {
 }
 
 // Environment detection for SSL configuration
-const isRender = process.env.RENDER === 'true' || (process.env.NODE_ENV === 'production' && !process.env.REPLIT_DEV_DOMAIN);
+const isRender = process.env.RENDER === 'true' || process.env.NODE_ENV === 'production';
 const isReplit = process.env.REPLIT_DEV_DOMAIN || process.env.REPL_ID;
 
 // Configure SSL based on environment
 let sslConfig;
 let finalConnectionString = databaseUrl;
 
-if (isRender) {
-  // Render production environment - use SSL with certificate override for self-signed certs
-  sslConfig = {
-    rejectUnauthorized: false,  // Accept self-signed certificates
-    require: true,
-    checkServerIdentity: () => undefined  // Skip hostname verification for Supabase
-  };
-  // Ensure SSL is required in connection string for Render
-  if (!finalConnectionString.includes('sslmode=')) {
-    finalConnectionString += finalConnectionString.includes('?') ? '&sslmode=require' : '?sslmode=require';
-  }
-  console.log("🚀 Using Render production SSL configuration (accepts self-signed certs)");
-} else if (isReplit) {
-  // Replit development environment - disable SSL to avoid certificate issues
+if (isReplit) {
+  // Replit development environment - disable SSL completely
   sslConfig = false;
   finalConnectionString = finalConnectionString.replace(/[?&]sslmode=require/, '').replace(/sslmode=require[?&]?/, '');
   finalConnectionString += finalConnectionString.includes('?') ? '&sslmode=disable' : '?sslmode=disable';
   console.log("🔧 Using Replit development configuration (SSL disabled)");
 } else {
-  // Default/other environments - handle self-signed certificates
+  // Production/Render environment - use simplified SSL config
   sslConfig = {
-    rejectUnauthorized: false,  // Accept self-signed certificates
-    checkServerIdentity: () => undefined  // Skip hostname verification
+    rejectUnauthorized: false  // Accept self-signed certificates
   };
-  console.log("⚙️ Using default SSL configuration (accepts self-signed certs)");
+  // Ensure SSL is required in connection string
+  if (!finalConnectionString.includes('sslmode=')) {
+    finalConnectionString += finalConnectionString.includes('?') ? '&sslmode=require' : '?sslmode=require';
+  }
+  console.log("🚀 Using production SSL configuration (accepts self-signed certs)");
 }
 
 const connectionConfig = {
