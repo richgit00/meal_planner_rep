@@ -10,15 +10,60 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type Meal, type MealPlan } from "@shared/schema";
 
-const DAYS_OF_WEEK = [
-  { name: "Monday", date: "July 21" },
-  { name: "Tuesday", date: "July 22" },
-  { name: "Wednesday", date: "July 23" },
-  { name: "Thursday", date: "July 24" },
-  { name: "Friday", date: "July 25" },
-  { name: "Saturday", date: "July 26" },
-  { name: "Sunday", date: "July 27" },
-];
+// Helper function to get week dates from a start date
+const getWeekDates = (weekStartDate: string) => {
+  const startDate = new Date(weekStartDate);
+  const days = [];
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+    
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    
+    // Adjust for Monday start
+    const dayIndex = (date.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
+    const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][i];
+    
+    days.push({
+      name: dayName,
+      date: `${monthNames[date.getMonth()]} ${date.getDate()}`
+    });
+  }
+  
+  return days;
+};
+
+// Helper function to format week range for display
+const formatWeekRange = (weekStartDate: string) => {
+  const startDate = new Date(weekStartDate);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 6);
+  
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  const startMonth = monthNames[startDate.getMonth()];
+  const endMonth = monthNames[endDate.getMonth()];
+  const startDay = startDate.getDate();
+  const endDay = endDate.getDate();
+  const year = startDate.getFullYear();
+  
+  if (startMonth === endMonth) {
+    return `${startMonth} ${startDay}-${endDay}, ${year}`;
+  } else {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+  }
+};
+
+// Helper functions for week navigation
+const addWeeks = (dateString: string, weeks: number) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + (weeks * 7));
+  return date.toISOString().split('T')[0];
+};
+
+const DAYS_OF_WEEK = getWeekDates;
 
 export default function MealPlan() {
   const { toast } = useToast();
@@ -27,7 +72,7 @@ export default function MealPlan() {
   const [showMealModal, setShowMealModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [currentWeek] = useState("2025-07-21"); // Week starting Monday July 21, 2025
+  const [currentWeek, setCurrentWeek] = useState("2025-07-21"); // Week starting Monday July 21, 2025
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -107,6 +152,14 @@ export default function MealPlan() {
     }
   };
 
+  const goToPreviousWeek = () => {
+    setCurrentWeek(addWeeks(currentWeek, -1));
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeek(addWeeks(currentWeek, 1));
+  };
+
   const handleGenerateShoppingList = () => {
     // Check if there are any meals planned for the week
     const hasPlannedMeals = currentMeals.some(dayMeal => dayMeal.mealId);
@@ -129,12 +182,12 @@ export default function MealPlan() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Planner</h2>
         <div className="flex items-center space-x-4">
-          <Button variant="outline">
+          <Button variant="outline" onClick={goToPreviousWeek}>
             <ChevronLeft className="h-4 w-4 mr-2" />
             Previous Week
           </Button>
-          <span className="text-lg font-medium text-slate-800">July 21-27, 2025</span>
-          <Button variant="outline">
+          <span className="text-lg font-medium text-slate-800">{formatWeekRange(currentWeek)}</span>
+          <Button variant="outline" onClick={goToNextWeek}>
             Next Week
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
@@ -143,7 +196,7 @@ export default function MealPlan() {
 
       {/* Weekly Calendar Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 mb-8">
-        {DAYS_OF_WEEK.map((day) => {
+        {DAYS_OF_WEEK(currentWeek).map((day) => {
           const dayMeal = currentMeals.find(m => m.day === day.name);
           const meal = dayMeal?.mealId ? meals.find(m => m.id === dayMeal.mealId) : null;
 
