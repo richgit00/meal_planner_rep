@@ -21,14 +21,13 @@ if (!finalConnectionString.includes(':6543/')) {
   console.warn("⚠️ DATABASE_URL should use port 6543 for Supabase IPv4 compatibility");
 }
 
-// Create connection config with explicit SSL settings for Supabase
+// Disable SSL verification for Supabase development
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+// Create connection config with minimal SSL settings for Supabase
 const connectionConfig = {
   connectionString: finalConnectionString,
-  ssl: {
-    rejectUnauthorized: false,
-    require: true,
-    ca: false
-  },
+  ssl: false, // Disable SSL entirely for development
   // Additional connection settings for stability
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
