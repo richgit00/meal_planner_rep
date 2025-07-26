@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Upload, Download, Save } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Download, Save, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -29,6 +29,7 @@ export default function Admin() {
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [showMealDialog, setShowMealDialog] = useState(false);
   const [bulkImportText, setBulkImportText] = useState("");
+  const [selectedRecipe, setSelectedRecipe] = useState<Meal | null>(null);
 
   const { data: meals = [], isLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -177,6 +178,10 @@ export default function Admin() {
     } catch (error) {
       toast({ title: "Invalid JSON format", variant: "destructive" });
     }
+  };
+
+  const deleteMeal = (id: string) => {
+    deleteMealMutation.mutate(id);
   };
 
   const exportMeals = () => {
@@ -406,24 +411,34 @@ export default function Admin() {
         {meals?.map((meal) => (
           <Card key={meal.id} className="overflow-hidden">
             <div 
-              className="h-32 sm:h-40 md:h-48 w-full bg-cover bg-centre cursor-pointer"
+              className="h-32 sm:h-40 md:h-48 w-full bg-cover bg-center cursor-pointer"
               style={{ backgroundImage: `url(${meal.image})` }}
               onClick={() => setSelectedRecipe(meal)}
             />
             <CardContent className="p-3 sm:p-4">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-semibold text-slate-800 text-sm sm:text-base md:text-lg flex-1 pr-2 line-clamp-2">{meal.name}</h3>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="flex-shrink-0 min-h-[32px] p-2"
-                  onClick={() => deleteMeal(meal.id)}
-                >
-                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
+                <div className="flex gap-2 flex-shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-h-[32px] p-2"
+                    onClick={() => handleEdit(meal)}
+                  >
+                    <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="min-h-[32px] p-2"
+                    onClick={() => deleteMeal(meal.id)}
+                  >
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </Button>
+                </div>
               </div>
               <p className="text-slate-600 text-xs sm:text-sm mb-3 line-clamp-2">{meal.description}</p>
-              <div className="flex justify-between items-centre text-xs text-slate-500 mb-3">
+              <div className="flex justify-between items-center text-xs text-slate-500 mb-3">
                 <span>{meal.cookTime}</span>
                 <span>{meal.difficulty}</span>
               </div>
@@ -434,7 +449,43 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
-        ))}
+        ))}</div>
+
+      {selectedRecipe && (
+        <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipe(null)}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{selectedRecipe.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="aspect-video w-full bg-cover bg-center rounded-lg" 
+                   style={{ backgroundImage: `url(${selectedRecipe.image})` }} />
+              <p className="text-slate-600">{selectedRecipe.description}</p>
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div><strong>Cook Time:</strong> {selectedRecipe.cookTime}</div>
+                <div><strong>Difficulty:</strong> {selectedRecipe.difficulty}</div>
+                <div><strong>Servings:</strong> {selectedRecipe.servings}</div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Ingredients:</h4>
+                <ul className="list-disc list-inside space-y-1">
+                  {selectedRecipe.ingredients?.map((ing, index) => (
+                    <li key={index} className="text-sm">{ing.amount} {ing.name}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Instructions:</h4>
+                <ol className="list-decimal list-inside space-y-1">
+                  {selectedRecipe.instructions?.map((step, index) => (
+                    <li key={index} className="text-sm">{step}</li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
       </div>
 
 
