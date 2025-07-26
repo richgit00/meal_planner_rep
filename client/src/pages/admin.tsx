@@ -122,11 +122,13 @@ export default function Admin() {
     return text.split('\n').filter(line => line.trim());
   };
 
-  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }>) => {
+  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }> | null) => {
+    if (!ingredients || !Array.isArray(ingredients)) return "";
     return ingredients.map(ing => `${ing.name} | ${ing.amount} | ${ing.category}`).join('\n');
   };
 
-  const formatInstructionsText = (instructions: string[]) => {
+  const formatInstructionsText = (instructions: string[] | null) => {
+    if (!instructions || !Array.isArray(instructions)) return "";
     return instructions.join('\n');
   };
 
