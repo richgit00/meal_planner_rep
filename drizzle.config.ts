@@ -1,4 +1,3 @@
-
 import { defineConfig } from "drizzle-kit";
 
 if (!process.env.DATABASE_URL) {
@@ -47,7 +46,10 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: finalUrl,
-    ssl: sslConfig
+    url: (process.env.RENDER === 'true' || (process.env.NODE_ENV === 'production' && !process.env.REPLIT_DEV_DOMAIN))
+      ? process.env.DATABASE_URL 
+      : process.env.DATABASE_URL?.replace('sslmode=require', 'sslmode=disable'),
+    ssl: (process.env.RENDER === 'true' || (process.env.NODE_ENV === 'production' && !process.env.REPLIT_DEV_DOMAIN)) 
+      ? { rejectUnauthorized: false } : false
   },
 });

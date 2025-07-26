@@ -21,18 +21,18 @@ console.log("- DATABASE_URL:", process.env.DATABASE_URL ? "✅ Set" : "❌ Missi
 // Parse and validate the DATABASE_URL
 let databaseUrl = process.env.DATABASE_URL;
 
-// Ensure we're using IPv4-compatible port 6543 for Supabase
-if (databaseUrl.includes('.supabase.com:5432')) {
-  databaseUrl = databaseUrl.replace(':5432', ':6543');
-  console.log("✅ Updated DATABASE_URL to use IPv4-compatible port 6543");
-}
-
-if (!databaseUrl.includes(':6543/') && databaseUrl.includes('.supabase.com')) {
-  console.warn("⚠️ DATABASE_URL should use port 6543 for Supabase IPv4 compatibility with Render");
+// Ensure we're using IPv4-compatible port 6543 for Supabase on Render
+if (databaseUrl.includes('.supabase.com')) {
+  if (databaseUrl.includes(':5432')) {
+    databaseUrl = databaseUrl.replace(':5432', ':6543');
+    console.log("✅ Updated DATABASE_URL to use IPv4-compatible port 6543 for Render");
+  } else if (!databaseUrl.includes(':6543')) {
+    console.warn("⚠️ DATABASE_URL should use port 6543 for Supabase IPv4 compatibility with Render");
+  }
 }
 
 // Environment detection for SSL configuration
-const isRender = process.env.RENDER || process.env.NODE_ENV === 'production';
+const isRender = process.env.RENDER === 'true' || (process.env.NODE_ENV === 'production' && !process.env.REPLIT_DEV_DOMAIN);
 const isReplit = process.env.REPLIT_DEV_DOMAIN || process.env.REPL_ID;
 
 // Configure SSL based on environment
