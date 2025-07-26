@@ -56,7 +56,7 @@ const addWeeks = (dateString: string, weeks: number) => {
 export default function ShoppingList() {
   const { toast } = useToast();
   const [location] = useLocation();
-  
+
   // Get week from URL params or default to current week being used in meal planner
   const urlParams = new URLSearchParams(window.location.search);
   const weekFromUrl = urlParams.get('week');
@@ -99,7 +99,7 @@ export default function ShoppingList() {
     ];
 
     let shareText = `🛒 Shopping List - Week of ${formatWeekRange(currentWeek)}\n\n`;
-    
+
     categories.forEach(category => {
       if (category.items.length > 0) {
         shareText += `${category.icon} ${category.name}:\n`;
@@ -147,9 +147,9 @@ export default function ShoppingList() {
     iconColor: string 
   }) => {
     if (items.length === 0) return null;
-    
+
     const IconComponent = icon;
-    
+
     return (
       <Card>
         <CardContent className="p-6">
