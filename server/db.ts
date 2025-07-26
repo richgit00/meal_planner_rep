@@ -21,11 +21,25 @@ if (!finalConnectionString.includes(':6543/')) {
   console.warn("⚠️ DATABASE_URL should use port 6543 for Supabase IPv4 compatibility");
 }
 
-// For development, disable SSL entirely to avoid certificate issues
-// For production, Render will handle SSL properly
+// Configure SSL based on environment and provider
+const isProduction = process.env.NODE_ENV === 'production';
+const isReplit = process.env.REPLIT_DB_URL !== undefined;
+
+let sslConfig;
+if (isProduction && !isReplit) {
+  // Production (Render) - use SSL with cert validation disabled
+  sslConfig = { rejectUnauthorized: false };
+} else if (isReplit) {
+  // Replit development - disable SSL entirely
+  sslConfig = false;
+} else {
+  // Local/Supabase development - handle self-signed certs
+  sslConfig = { rejectUnauthorized: false };
+}
+
 const connectionConfig = {
   connectionString: finalConnectionString,
-  ssl: false,
+  ssl: sslConfig,
   // Additional connection settings for stability
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
