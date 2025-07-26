@@ -22,7 +22,6 @@ interface ShoppingListData {
   other: ShoppingListItem[];
   summary: {
     totalItems: number;
-    estimatedCost: string;
   };
 }
 
@@ -96,7 +95,7 @@ export default function ShoppingList() {
       }
     });
 
-    shareText += `📊 Summary: ${shoppingList.summary.totalItems} items • ${shoppingList.summary.estimatedCost}`;
+    shareText += `📊 Summary: ${shoppingList.summary.totalItems} items`;
 
     try {
       await navigator.clipboard.writeText(shareText);
@@ -234,9 +233,7 @@ export default function ShoppingList() {
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-primary">{shoppingList.summary.totalItems} items</div>
-            <div className="text-sm text-slate-600">
-              Estimated Cost: <span>{shoppingList.summary.estimatedCost}</span>
-            </div>
+            <div className="text-sm text-slate-600">Generated from your weekly meal plan</div>
           </div>
         </div>
       </div>

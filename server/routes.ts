@@ -247,18 +247,23 @@ export async function registerRoutes(app: Express): Promise<void> {
         return 'other';
       };
 
-      // Aggregate ingredients by category
+      // Aggregate ingredients by name
       const ingredientMap = new Map<string, { quantity: string; category: 'fresh' | 'pantry' }>();
 
       selectedMeals.forEach(meal => {
         if (meal && meal.ingredients && Array.isArray(meal.ingredients)) {
           meal.ingredients.forEach(ingredient => {
             if (ingredient && ingredient.name && ingredient.amount) {
-              if (ingredientMap.has(ingredient.name)) {
-                // For simplicity, we'll just use the first quantity found
-                // In a real app, you'd want to aggregate quantities properly
+              const ingredientName = ingredient.name.trim();
+              if (ingredientMap.has(ingredientName)) {
+                // Keep existing quantity for now (could be improved to sum quantities)
+                const existing = ingredientMap.get(ingredientName)!;
+                ingredientMap.set(ingredientName, {
+                  quantity: existing.quantity + " + " + ingredient.amount,
+                  category: ingredient.category || existing.category
+                });
               } else {
-                ingredientMap.set(ingredient.name, {
+                ingredientMap.set(ingredientName, {
                   quantity: ingredient.amount,
                   category: ingredient.category || 'pantry'
                 });
@@ -268,10 +273,13 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       });
 
-      // Categorize items
+      // Process each ingredient and categorize
       Array.from(ingredientMap.entries()).forEach(([name, details]) => {
         // Check if pantry item is in stock
-        const pantryItem = pantryItemsData.find(p => p.name.toLowerCase().includes(name.toLowerCase()));
+        const pantryItem = pantryItemsData.find(p => 
+          p.name.toLowerCase().includes(name.toLowerCase()) || 
+          name.toLowerCase().includes(p.name.toLowerCase())
+        );
         const needToShop = details.category === 'fresh' || !pantryItem || pantryItem.status !== 'in-stock';
         
         if (needToShop) {
@@ -284,13 +292,11 @@ export async function registerRoutes(app: Express): Promise<void> {
       const totalItems = shoppingList.meatAndFish.length + shoppingList.vegetables.length + 
                         shoppingList.fruit.length + shoppingList.seasoning.length + 
                         shoppingList.staples.length + shoppingList.other.length;
-      const estimatedCost = totalItems * 4.25; // Simple estimation
 
       res.json({
         ...shoppingList,
         summary: {
-          totalItems,
-          estimatedCost: `$${estimatedCost.toFixed(2)}`
+          totalItems
         }
       });
     } catch (error) {
