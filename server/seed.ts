@@ -181,9 +181,8 @@ export async function seedDatabase() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   seedDatabase().then(() => {
     console.log("Seeding completed successfully");
-    process.exit(0);
   }).catch((error) => {
     console.error("Seeding failed:", error);
-    process.exit(1);
+    throw error;
   });
 }

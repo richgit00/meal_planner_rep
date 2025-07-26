@@ -73,8 +73,8 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  const server = app.listen(port, () => {
-    log(`serving on port ${port}`);
+  const server = app.listen(port, '0.0.0.0', () => {
+    log(`serving on port ${port} (accessible on 0.0.0.0)`);
   });
 
   // importantly only setup vite in development and after
