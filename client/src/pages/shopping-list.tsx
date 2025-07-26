@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Printer, Share2, Leaf, Package, Fish, Wheat, Apple, ChefHat, ShoppingBasket } from "lucide-react";
+import { ChevronLeft, ChevronRight, Share2, Leaf, Package, Fish, Wheat, Apple, ChefHat, ShoppingBasket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +25,34 @@ interface ShoppingListData {
   };
 }
 
+// Helper function to format week range for display
+const formatWeekRange = (weekStartDate: string) => {
+  const startDate = new Date(weekStartDate);
+  const endDate = new Date(startDate);
+  endDate.setDate(startDate.getDate() + 6);
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  const startMonth = monthNames[startDate.getMonth()];
+  const endMonth = monthNames[endDate.getMonth()];
+  const startDay = startDate.getDate();
+  const endDay = endDate.getDate();
+  const year = startDate.getFullYear();
+
+  if (startMonth === endMonth) {
+    return `${startMonth} ${startDay}-${endDay}, ${year}`;
+  } else {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+  }
+};
+
+// Helper functions for week navigation
+const addWeeks = (dateString: string, weeks: number) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + (weeks * 7));
+  return date.toISOString().split('T')[0];
+};
+
 export default function ShoppingList() {
   const { toast } = useToast();
   const [location] = useLocation();
@@ -32,7 +60,7 @@ export default function ShoppingList() {
   // Get week from URL params or default to current week being used in meal planner
   const urlParams = new URLSearchParams(window.location.search);
   const weekFromUrl = urlParams.get('week');
-  const [currentWeek] = useState(weekFromUrl || "2025-07-21");
+  const [currentWeek, setCurrentWeek] = useState(weekFromUrl || "2025-07-21");
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
   const { data: shoppingList, isLoading } = useQuery<ShoppingListData>({
@@ -50,6 +78,14 @@ export default function ShoppingList() {
     setCheckedItems(newCheckedItems);
   };
 
+  const goToPreviousWeek = () => {
+    setCurrentWeek(addWeeks(currentWeek, -1));
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeek(addWeeks(currentWeek, 1));
+  };
+
   const handleShareList = async () => {
     if (!shoppingList) return;
 
@@ -61,26 +97,6 @@ export default function ShoppingList() {
       { name: 'Staples', items: shoppingList.staples, icon: '🌾' },
       { name: 'Other', items: shoppingList.other, icon: '🛒' },
     ];
-
-    const formatWeekRange = (weekStartDate: string) => {
-      const startDate = new Date(weekStartDate);
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 6);
-      
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      
-      const startMonth = monthNames[startDate.getMonth()];
-      const endMonth = monthNames[endDate.getMonth()];
-      const startDay = startDate.getDate();
-      const endDay = endDate.getDate();
-      const year = startDate.getFullYear();
-      
-      if (startMonth === endMonth) {
-        return `${startMonth} ${startDay}-${endDay}, ${year}`;
-      } else {
-        return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
-      }
-    };
 
     let shareText = `🛒 Shopping List - Week of ${formatWeekRange(currentWeek)}\n\n`;
     
@@ -173,10 +189,15 @@ export default function ShoppingList() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Shopping List</h2>
-        <div className="flex space-x-4">
-          <Button variant="outline">
-            <Printer className="h-4 w-4 mr-2" />
-            Print List
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" onClick={goToPreviousWeek}>
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Previous Week
+          </Button>
+          <span className="text-lg font-medium text-slate-800">{formatWeekRange(currentWeek)}</span>
+          <Button variant="outline" onClick={goToNextWeek}>
+            Next Week
+            <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
           <Button onClick={handleShareList}>
             <Share2 className="h-4 w-4 mr-2" />
