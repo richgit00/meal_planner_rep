@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const meals = pgTable("meals", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey().notNull().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   description: text("description").notNull(),
   cookTime: text("cook_time").notNull(),
@@ -16,13 +16,13 @@ export const meals = pgTable("meals", {
 });
 
 export const mealPlans = pgTable("meal_plans", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey().notNull().default(sql`gen_random_uuid()`),
   weekStartDate: text("week_start_date").notNull(),
   meals: json("meals").$type<Array<{ day: string; mealId: string | null }>>().notNull(),
 });
 
 export const pantryItems = pgTable("pantry_items", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: varchar("id").primaryKey().notNull().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   category: text("category").notNull(),
   status: text("status").notNull(), // 'in-stock' | 'low-stock' | 'out-of-stock'
