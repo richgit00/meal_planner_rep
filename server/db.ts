@@ -8,10 +8,13 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+// Bypass SSL certificate validation for Supabase
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? {
+  ssl: {
     rejectUnauthorized: false
-  } : false
+  }
 });
 export const db = drizzle({ client: pool, schema });
