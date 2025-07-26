@@ -204,13 +204,14 @@ export default function Admin() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
-        <div className="flex space-x-4">
-          <Button onClick={exportMeals} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Meals
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
+        <div className="flex flex-wrap gap-2 sm:gap-4 w-full sm:w-auto">
+          <Button onClick={exportMeals} variant="outline" size="sm" className="flex-1 sm:flex-none">
+            <Download className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">Export</span>
+            <span className="xs:hidden">Export</span>
           </Button>
 
           {/*
@@ -222,9 +223,10 @@ export default function Admin() {
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Import
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                <Upload className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Bulk Import</span>
+                <span className="xs:hidden">Import</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
@@ -250,18 +252,19 @@ export default function Admin() {
 
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
-              <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Meal
+              <Button onClick={() => { setEditingMeal(null); form.reset(); }} size="sm" className="flex-1 sm:flex-none">
+                <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Add Meal</span>
+                <span className="xs:hidden">Add</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto m-2 sm:m-4">
               <DialogHeader>
-                <DialogTitle>{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
+                <DialogTitle className="text-lg sm:text-xl">{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="name"
@@ -304,7 +307,7 @@ export default function Admin() {
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     <FormField
                       control={form.control}
                       name="difficulty"
@@ -407,45 +410,54 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {meals?.map((meal) => (
           <Card key={meal.id} className="overflow-hidden">
             <div 
-              className="h-32 sm:h-40 md:h-48 w-full bg-cover bg-center cursor-pointer"
+              className="h-32 sm:h-36 lg:h-40 w-full bg-cover bg-center cursor-pointer"
               style={{ backgroundImage: `url(${meal.image})` }}
               onClick={() => setSelectedRecipe(meal)}
             />
-            <CardContent className="p-3 sm:p-4">
+            <CardContent className="p-3">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-slate-800 text-sm sm:text-base md:text-lg flex-1 pr-2 line-clamp-2">{meal.name}</h3>
-                <div className="flex gap-2 flex-shrink-0">
+                <h3 className="font-semibold text-slate-800 text-sm flex-1 pr-2 line-clamp-2">{meal.name}</h3>
+                <div className="flex gap-1 flex-shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="min-h-[32px] p-2"
+                    className="h-7 w-7 p-0"
                     onClick={() => handleEdit(meal)}
                   >
-                    <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Edit className="w-3 h-3" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="min-h-[32px] p-2"
+                    className="h-7 w-7 p-0"
                     onClick={() => deleteMeal(meal.id)}
                   >
-                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
-              <p className="text-slate-600 text-xs sm:text-sm mb-3 line-clamp-2">{meal.description}</p>
-              <div className="flex justify-between items-center text-xs text-slate-500 mb-3">
-                <span>{meal.cookTime}</span>
-                <span>{meal.difficulty}</span>
+              <p className="text-slate-600 text-xs mb-2 line-clamp-2">{meal.description}</p>
+              <div className="flex justify-between items-center text-xs text-slate-500 mb-2">
+                <span className="truncate">{meal.cookTime}</span>
+                <span className="truncate">{meal.difficulty}</span>
               </div>
-              <div className="text-sm text-slate-600">
-                <strong>Servings:</strong> {meal.servings}<br />
-                <strong>Ingredients:</strong> {(meal.ingredients && Array.isArray(meal.ingredients)) ? meal.ingredients.length : 0}<br />
-                <strong>Steps:</strong> {(meal.instructions && Array.isArray(meal.instructions)) ? meal.instructions.length : 0}
+              <div className="text-xs text-slate-600 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>Servings:</span>
+                  <span>{meal.servings}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Ingredients:</span>
+                  <span>{(meal.ingredients && Array.isArray(meal.ingredients)) ? meal.ingredients.length : 0}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Steps:</span>
+                  <span>{(meal.instructions && Array.isArray(meal.instructions)) ? meal.instructions.length : 0}</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -454,18 +466,27 @@ export default function Admin() {
 
       {selectedRecipe && (
         <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipe(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto m-2 sm:m-4">
             <DialogHeader>
-              <DialogTitle>{selectedRecipe.name}</DialogTitle>
+              <DialogTitle className="text-lg sm:text-xl">{selectedRecipe.name}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="aspect-video w-full bg-cover bg-center rounded-lg" 
                    style={{ backgroundImage: `url(${selectedRecipe.image})` }} />
-              <p className="text-slate-600">{selectedRecipe.description}</p>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div><strong>Cook Time:</strong> {selectedRecipe.cookTime}</div>
-                <div><strong>Difficulty:</strong> {selectedRecipe.difficulty}</div>
-                <div><strong>Servings:</strong> {selectedRecipe.servings}</div>
+              <p className="text-slate-600 text-sm sm:text-base">{selectedRecipe.description}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
+                <div className="flex justify-between sm:block">
+                  <span className="font-semibold">Cook Time:</span>
+                  <span className="sm:block">{selectedRecipe.cookTime}</span>
+                </div>
+                <div className="flex justify-between sm:block">
+                  <span className="font-semibold">Difficulty:</span>
+                  <span className="sm:block">{selectedRecipe.difficulty}</span>
+                </div>
+                <div className="flex justify-between sm:block">
+                  <span className="font-semibold">Servings:</span>
+                  <span className="sm:block">{selectedRecipe.servings}</span>
+                </div>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Ingredients:</h4>
