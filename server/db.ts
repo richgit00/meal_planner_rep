@@ -32,33 +32,25 @@ if (databaseUrl.includes('.supabase.com')) {
 }
 
 // Environment detection for SSL configuration
-const isRender = process.env.RENDER === 'true' || process.env.NODE_ENV === 'production';
 const isReplit = process.env.REPLIT_DEV_DOMAIN || process.env.REPL_ID;
 
-// Configure SSL based on environment
+// Configure SSL based on environment - crucial for Render deployment
 let sslConfig;
-let finalConnectionString = databaseUrl;
 
 if (isReplit) {
   // Replit development environment - disable SSL completely
   sslConfig = false;
-  finalConnectionString = finalConnectionString.replace(/[?&]sslmode=require/, '').replace(/sslmode=require[?&]?/, '');
-  finalConnectionString += finalConnectionString.includes('?') ? '&sslmode=disable' : '?sslmode=disable';
   console.log("🔧 Using Replit development configuration (SSL disabled)");
 } else {
-  // Production/Render environment - use simplified SSL config
+  // Production/Render environment - MUST explicitly set rejectUnauthorized: false
   sslConfig = {
-    rejectUnauthorized: false  // Accept self-signed certificates
+    rejectUnauthorized: false  // This is crucial for Supabase self-signed certs
   };
-  // Ensure SSL is required in connection string
-  if (!finalConnectionString.includes('sslmode=')) {
-    finalConnectionString += finalConnectionString.includes('?') ? '&sslmode=require' : '?sslmode=require';
-  }
-  console.log("🚀 Using production SSL configuration (accepts self-signed certs)");
+  console.log("🚀 Using production SSL configuration (rejectUnauthorized: false)");
 }
 
 const connectionConfig = {
-  connectionString: finalConnectionString,
+  connectionString: databaseUrl,
   ssl: sslConfig,
   // Connection pool settings optimized for both Render and Replit
   connectionTimeoutMillis: 15000,
@@ -70,7 +62,7 @@ const connectionConfig = {
   keepAliveInitialDelayMillis: 10000
 };
 
-console.log(`📡 Connecting to database on port ${finalConnectionString.includes(':6543') ? '6543 (IPv4)' : '5432 (IPv6)'}`);
+console.log(`📡 Connecting to database on port ${databaseUrl.includes(':6543') ? '6543 (IPv4)' : '5432 (IPv6)'}`);
 
 export const pool = new Pool(connectionConfig);
 export const db = drizzle({ client: pool, schema });
