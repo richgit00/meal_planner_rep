@@ -21,10 +21,14 @@ if (!finalConnectionString.includes(':6543/')) {
   console.warn("⚠️ DATABASE_URL should use port 6543 for Supabase IPv4 compatibility");
 }
 
-// Disable SSL completely for Replit environment to avoid certificate issues
+// Environment-aware SSL configuration
+// Disable SSL for development (Replit), enable for production (Render)
+const isProduction = process.env.NODE_ENV === 'production';
 const connectionConfig = {
-  connectionString: finalConnectionString.replace('sslmode=require', 'sslmode=disable'),
-  ssl: false,
+  connectionString: isProduction 
+    ? finalConnectionString 
+    : finalConnectionString.replace('sslmode=require', 'sslmode=disable'),
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
   // Additional connection settings for stability
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
