@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, Save, ShoppingCart, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +22,7 @@ const DAYS_OF_WEEK = [
 
 export default function MealPlan() {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [showMealModal, setShowMealModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
@@ -121,7 +121,7 @@ export default function MealPlan() {
     }
 
     // Navigate to shopping list page
-    navigate("/shopping-list");
+    setLocation("/shopping-list");
   };
 
   return (
