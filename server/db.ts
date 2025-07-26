@@ -55,7 +55,7 @@ const connectionConfig = {
   // Connection pool settings optimized for both Render and Replit
   connectionTimeoutMillis: 15000,
   idleTimeoutMillis: 30000,
-  max: isRender ? 20 : 10, // More connections for production
+  max: isReplit ? 10 : 20, // More connections for production
   min: 2,
   // Additional settings for stability
   keepAlive: true,

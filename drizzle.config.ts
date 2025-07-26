@@ -16,26 +16,14 @@ if (databaseUrl.includes('.supabase.com:5432')) {
 const isRender = process.env.RENDER || process.env.NODE_ENV === 'production';
 const isReplit = process.env.REPLIT_DEV_DOMAIN || process.env.REPL_ID;
 
-// Configure SSL based on environment
+// Configure SSL based on environment - match db.ts approach
 let sslConfig;
-let finalUrl = databaseUrl;
 
-if (isRender) {
-  // Render production - require SSL with certificate override
-  sslConfig = {
-    rejectUnauthorized: false,
-    require: true
-  };
-  if (!finalUrl.includes('sslmode=')) {
-    finalUrl += finalUrl.includes('?') ? '&sslmode=require' : '?sslmode=require';
-  }
-} else if (isReplit) {
-  // Replit development - disable SSL
+if (isReplit) {
+  // Replit development - disable SSL completely
   sslConfig = false;
-  finalUrl = finalUrl.replace(/[?&]sslmode=require/, '').replace(/sslmode=require[?&]?/, '');
-  finalUrl += finalUrl.includes('?') ? '&sslmode=disable' : '?sslmode=disable';
 } else {
-  // Default - try SSL
+  // Production/Render - explicitly set rejectUnauthorized: false
   sslConfig = {
     rejectUnauthorized: false
   };
@@ -46,11 +34,7 @@ export default defineConfig({
   schema: "./shared/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.REPLIT_DEV_DOMAIN
-      ? process.env.DATABASE_URL?.replace('sslmode=require', 'sslmode=disable')
-      : process.env.DATABASE_URL,
-    ssl: process.env.REPLIT_DEV_DOMAIN 
-      ? false 
-      : { rejectUnauthorized: false }
+    url: databaseUrl,
+    ssl: sslConfig
   },
 });
