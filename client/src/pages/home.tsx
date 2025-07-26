@@ -85,27 +85,6 @@ export default function Home() {
           </Card>
         </Link>
       </div>
-
-      {/* Quick Stats */}
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">This Week's Overview</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{mealsPlanned}</div>
-              <div className="text-sm text-slate-600">Meals Planned</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-accent">23</div>
-              <div className="text-sm text-slate-600">Ingredients Needed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-500">12</div>
-              <div className="text-sm text-slate-600">Pantry Items</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
