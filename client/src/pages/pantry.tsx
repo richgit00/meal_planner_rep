@@ -90,7 +90,7 @@ export default function Pantry() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">Pantry Essentials</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Add Item

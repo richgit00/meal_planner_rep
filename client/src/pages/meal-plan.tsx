@@ -14,24 +14,24 @@ import { type Meal, type MealPlan } from "@shared/schema";
 const getWeekDates = (weekStartDate: string) => {
   const startDate = new Date(weekStartDate);
   const days = [];
-  
+
   for (let i = 0; i < 7; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
-    
+
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    
+
     // Adjust for Monday start
     const dayIndex = (date.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
     const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][i];
-    
+
     days.push({
       name: dayName,
       date: `${monthNames[date.getMonth()]} ${date.getDate()}`
     });
   }
-  
+
   return days;
 };
 
@@ -40,15 +40,15 @@ const formatWeekRange = (weekStartDate: string) => {
   const startDate = new Date(weekStartDate);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6);
-  
+
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
+
   const startMonth = monthNames[startDate.getMonth()];
   const endMonth = monthNames[endDate.getMonth()];
   const startDay = startDate.getDate();
   const endDay = endDate.getDate();
   const year = startDate.getFullYear();
-  
+
   if (startMonth === endMonth) {
     return `${startMonth} ${startDay}-${endDay}, ${year}`;
   } else {
@@ -181,7 +181,7 @@ export default function MealPlan() {
   const handleGenerateShoppingList = () => {
     // Check if there are any meals planned for the week
     const hasPlannedMeals = currentMeals.some(dayMeal => dayMeal.mealId);
-    
+
     if (!hasPlannedMeals) {
       toast({ 
         title: "No meals planned", 
@@ -198,7 +198,7 @@ export default function MealPlan() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Planner</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex items-center space-x-4">
           <Button variant="outline" onClick={goToPreviousWeek}>
             <ChevronLeft className="h-4 w-4 mr-2" />

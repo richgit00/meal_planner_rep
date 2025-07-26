@@ -24,7 +24,7 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
                   onSelectMeal(meal);
                   onOpenChange(false);
                 }}
-                className="meal-option bg-slate-50 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-primary border-2 border-transparent transition-colors duration-200"
+                className="meal-option bg-slate-50 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-primary border-2 border-transparent transition-colours duration-200"
               >
                 <img
                   src={meal.image}

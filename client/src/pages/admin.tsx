@@ -132,7 +132,7 @@ export default function Admin() {
   const onSubmit = (data: MealFormData) => {
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
-    
+
     const mealData: InsertMeal = {
       name: data.name,
       description: data.description,
@@ -201,13 +201,13 @@ export default function Admin() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">Meal Database Admin</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex space-x-4">
           <Button onClick={exportMeals} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export Meals
           </Button>
-          
+
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
@@ -409,7 +409,7 @@ export default function Admin() {
         ))}
       </div>
 
-      
+
     </div>
   );
 }

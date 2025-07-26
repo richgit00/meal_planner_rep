@@ -17,9 +17,9 @@ export default function Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-slate-800 mb-4">Plan Your Week, Simplify Your Life</h2>
+        <h2 className="text-3xl font-bold text-slate-800 mb-4">Weekly Meal Plan</h2>
         <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          Organize your weekly meals, generate shopping lists automatically, and keep track of your pantry essentials.
+          Organise your weekly meals, generate shopping lists automatically, and keep track of your pantry essentials.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export default function Home() {
                   <CalendarDays className="text-primary text-2xl" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-800 mb-2">Edit Meal Plan</h3>
-                <p className="text-slate-600 text-sm">Plan your weekly meals and organize your dining schedule</p>
+                <p className="text-slate-600 text-sm">Plan your weekly meals and organise your dining schedule</p>
               </div>
             </CardContent>
           </Card>
