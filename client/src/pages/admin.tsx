@@ -208,6 +208,41 @@ export default function Admin() {
             Export Meals
           </Button>
 
+          {/*
+          <Button onClick={importMeals} variant="outline">
+            <Upload className="h-4 w-4 mr-2" />
+            Import Meals
+          </Button>
+          */}
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Bulk Import
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Bulk Import Meals</DialogTitle>
+              </DialogHeader>
+              <Textarea
+                placeholder="Paste JSON array of meals here"
+                className="min-h-[200px]"
+                value={bulkImportText}
+                onChange={(e) => setBulkImportText(e.target.value)}
+              />
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button type="button" variant="secondary" onClick={() => setBulkImportText("")}>
+                  Clear
+                </Button>
+                <Button type="button" onClick={handleBulkImport}>
+                  Import
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
@@ -367,42 +402,35 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {meals.map((meal) => (
-          <Card key={meal.id}>
-            <CardHeader className="pb-2">
-              <img
-                src={meal.image}
-                alt={meal.name}
-                className="w-full h-48 object-cover rounded-lg mb-2"
-              />
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{meal.name}</CardTitle>
-                <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(meal)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    onClick={() => deleteMealMutation.mutate(meal.id)}
-                    disabled={deleteMealMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {meals?.map((meal) => (
+          <Card key={meal.id} className="overflow-hidden">
+            <div 
+              className="h-32 sm:h-40 md:h-48 w-full bg-cover bg-centre cursor-pointer"
+              style={{ backgroundImage: `url(${meal.image})` }}
+              onClick={() => setSelectedRecipe(meal)}
+            />
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-slate-800 text-sm sm:text-base md:text-lg flex-1 pr-2 line-clamp-2">{meal.name}</h3>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-shrink-0 min-h-[32px] p-2"
+                  onClick={() => deleteMeal(meal.id)}
+                >
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600 mb-3">{meal.description}</p>
-              <div className="flex justify-between items-center mb-3">
-                <Badge variant="outline">{meal.difficulty}</Badge>
-                <span className="text-sm text-slate-500">{meal.cookTime}</span>
+              <p className="text-slate-600 text-xs sm:text-sm mb-3 line-clamp-2">{meal.description}</p>
+              <div className="flex justify-between items-centre text-xs text-slate-500 mb-3">
+                <span>{meal.cookTime}</span>
+                <span>{meal.difficulty}</span>
               </div>
-              <div className="text-sm text-slate-600">
+              <div className="text-xs sm:text-sm text-slate-600">
                 <strong>Servings:</strong> {meal.servings}<br />
-                <strong>Ingredients:</strong> {meals.ingredients?.length}<br />
-                <strong>Steps:</strong> {meals.instructions?.length}
+                <strong>Ingredients:</strong> {meal.ingredients?.length || 0}<br />
+                <strong>Steps:</strong> {meal.instructions?.length || 0}
               </div>
             </CardContent>
           </Card>

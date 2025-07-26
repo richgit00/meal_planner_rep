@@ -24,63 +24,43 @@ export default function Home() {
       </div>
 
       {/* Main Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {/* Edit Meal Plan Card */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8">
         <Link href="/meal-plan">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CalendarDays className="text-primary text-2xl" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Edit Meal Plan</h3>
-                <p className="text-slate-600 text-sm">Plan your weekly meals and organise your dining schedule</p>
-              </div>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+              <CalendarDays className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-primary mb-2 sm:mb-3 md:mb-4" />
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 mb-1 sm:mb-2">Meal Plan</h3>
+              <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">Plan your weekly meals</p>
             </CardContent>
           </Card>
         </Link>
 
-        {/* Show Meal Plan Card */}
-        <Link href="/meal-plan">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="text-accent text-2xl" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Show Meal Plan</h3>
-                <p className="text-slate-600 text-sm">View your current weekly meal schedule and recipes</p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        {/* Shopping List Card */}
         <Link href="/shopping-list">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ShoppingCart className="text-orange-500 text-2xl" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Shopping List</h3>
-                <p className="text-slate-600 text-sm">Auto-generated shopping list based on your meal plan</p>
-              </div>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+              <ShoppingCart className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-accent mb-2 sm:mb-3 md:mb-4" />
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 mb-1 sm:mb-2">Shopping List</h3>
+              <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">Generated from your meal plan</p>
             </CardContent>
           </Card>
         </Link>
 
-        {/* Pantry Items Card */}
         <Link href="/pantry">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Package className="text-purple-500 text-2xl" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Pantry Items</h3>
-                <p className="text-slate-600 text-sm">Manage your pantry staples and essential ingredients</p>
-              </div>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+              <Package className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-orange-500 mb-2 sm:mb-3 md:mb-4" />
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 mb-1 sm:mb-2">Pantry</h3>
+              <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">Track what you have at home</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+              <Users className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto text-red-500 mb-2 sm:mb-3 md:mb-4" />
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-800 mb-1 sm:mb-2">Manage Recipes</h3>
+              <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">Add and edit your recipes</p>
             </CardContent>
           </Card>
         </Link>

@@ -97,28 +97,40 @@ export default function Pantry() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {Object.entries(categorizedItems).map(([category, items]) => (
           <Card key={category}>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+            <CardContent className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-3 sm:mb-4 flex items-center">
                 {category === "Spices & Seasonings" && "🌶️"}
                 {category === "Cooking Essentials" && "🫒"}
                 {category === "Pantry Staples" && "🍞"}
                 <span className="ml-2">{category}</span>
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-2">
-                    <div className="flex items-center">
-                      <div
-                        className={`w-3 h-3 rounded-full mr-3 ${getStatusColor(item.status)}`}
-                      />
-                      <span className="text-slate-800">{item.name}</span>
+                  <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-200">
+                    <div className="flex-1 min-w-0">
+                      <span className="font-medium text-slate-800 text-sm sm:text-base truncate">{item.name}</span>
+                      <div className="flex items-center mt-1">
+                        <div className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${getStatusColor(item.status)}`}></div>
+                        <span className="text-xs sm:text-sm text-slate-600 capitalize truncate">{getStatusText(item.status).replace('-', ' ')}</span>
+                      </div>
                     </div>
                     <Badge variant={getStatusBadgeVariant(item.status)} className="text-xs">
                       {getStatusText(item.status)}
                     </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 flex-shrink-0 min-h-[32px] text-xs sm:text-sm"
+                      onClick={() => {
+                        // setSelectedItem(item);
+                        // setEditModalOpen(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
                   </div>
                 ))}
               </div>
