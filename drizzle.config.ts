@@ -1,19 +1,13 @@
-import { defineConfig } from "drizzle-kit";
-
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set");
-}
+import type { Config } from "drizzle-kit";
 
 const connectionString = process.env.DATABASE_URL;
 
-export default defineConfig({
-  out: "./migrations",
+export default {
   schema: "./shared/schema.ts",
+  out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: connectionString,
-    ssl: {
-      rejectUnauthorized: false
-    }
+    url: connectionString!,
+    ssl: connectionString?.includes('supabase.com') ? { rejectUnauthorized: false } : false
   },
-});
+} satisfies Config;

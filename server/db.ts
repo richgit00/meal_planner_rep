@@ -14,14 +14,15 @@ console.log("Using custom Pool with SSL override");
 
 const connectionString = process.env.DATABASE_URL;
 
+// Always use SSL with rejectUnauthorized: false for Supabase
 const pool = new Pool({
   connectionString,
-  ssl: {
+  ssl: connectionString?.includes('supabase.com') ? {
     rejectUnauthorized: false,
-  },
+  } : false,
 });
 
-export const db = drizzle(pool);
+export const db = drizzle(pool, { schema });
 export { pool };
 
 // Test connection on startup
@@ -41,5 +42,6 @@ pool.on('error', (err) => {
     client.release();
   } catch (error) {
     console.error('❌ Initial database connection failed:', error.message);
+    console.error('Full error:', error);
   }
 })();
