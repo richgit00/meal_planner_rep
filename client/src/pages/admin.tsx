@@ -470,17 +470,17 @@ export default function Admin() {
               <div>
                 <h4 className="font-semibold mb-2">Ingredients:</h4>
                 <ul className="list-disc list-inside space-y-1">
-                  {selectedRecipe.ingredients?.map((ing, index) => (
+                  {selectedRecipe.ingredients && Array.isArray(selectedRecipe.ingredients) ? selectedRecipe.ingredients.map((ing, index) => (
                     <li key={index} className="text-sm">{ing.amount} {ing.name}</li>
-                  ))}
+                  )) : <li className="text-sm">No ingredients available</li>}
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Instructions:</h4>
                 <ol className="list-decimal list-inside space-y-1">
-                  {selectedRecipe.instructions?.map((step, index) => (
+                  {selectedRecipe.instructions && Array.isArray(selectedRecipe.instructions) ? selectedRecipe.instructions.map((step, index) => (
                     <li key={index} className="text-sm">{step}</li>
-                  ))}
+                  )) : <li className="text-sm">No instructions available</li>}
                 </ol>
               </div>
             </div>
