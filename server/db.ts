@@ -15,8 +15,6 @@ if (process.env.NODE_ENV === 'development') {
 
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : { rejectUnauthorized: false }
 });
 export const db = drizzle({ client: pool, schema });
