@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Upload, Download, Save, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -30,7 +29,6 @@ export default function Admin() {
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [showMealDialog, setShowMealDialog] = useState(false);
   const [bulkImportText, setBulkImportText] = useState("");
-  const [selectedRecipe, setSelectedRecipe] = useState<Meal | null>(null);
 
   const { data: meals = [], isLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -123,13 +121,11 @@ export default function Admin() {
     return text.split('\n').filter(line => line.trim());
   };
 
-  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }> | null) => {
-    if (!ingredients) return "";
+  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }>) => {
     return ingredients.map(ing => `${ing.name} | ${ing.amount} | ${ing.category}`).join('\n');
   };
 
-  const formatInstructionsText = (instructions: string[] | null) => {
-    if (!instructions) return "";
+  const formatInstructionsText = (instructions: string[]) => {
     return instructions.join('\n');
   };
 
@@ -164,8 +160,8 @@ export default function Admin() {
       difficulty: meal.difficulty,
       servings: meal.servings,
       image: meal.image,
-      ingredientsText: meal.ingredients ? formatIngredientsText(meal.ingredients) : "",
-      instructionsText: meal.instructions ? formatInstructionsText(meal.instructions) : "",
+      ingredientsText: formatIngredientsText(meal.ingredients),
+      instructionsText: formatInstructionsText(meal.instructions),
     });
     setShowMealDialog(true);
   };
@@ -181,10 +177,6 @@ export default function Admin() {
     } catch (error) {
       toast({ title: "Invalid JSON format", variant: "destructive" });
     }
-  };
-
-  const deleteMeal = (id: string) => {
-    deleteMealMutation.mutate(id);
   };
 
   const exportMeals = () => {
@@ -209,40 +201,12 @@ export default function Admin() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-slate-800">Weekly Meal Plan</h2>
+        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex space-x-4">
           <Button onClick={exportMeals} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export Meals
           </Button>
-
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Import
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Bulk Import Meals</DialogTitle>
-              </DialogHeader>
-              <Textarea
-                placeholder="Paste JSON array of meals here"
-                className="min-h-[200px]"
-                value={bulkImportText}
-                onChange={(e) => setBulkImportText(e.target.value)}
-              />
-              <div className="flex justify-end space-x-2 mt-4">
-                <Button type="button" variant="secondary" onClick={() => setBulkImportText("")}>
-                  Clear
-                </Button>
-                <Button type="button" onClick={handleBulkImport}>
-                  Import
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
 
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
@@ -257,7 +221,7 @@ export default function Admin() {
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="name"
@@ -300,7 +264,7 @@ export default function Admin() {
                     )}
                   />
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="difficulty"
@@ -403,93 +367,49 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {meals?.map((meal) => (
-          <Card key={meal.id} className="overflow-hidden">
-            <div 
-              className="h-48 w-full bg-cover bg-center cursor-pointer"
-              style={{ backgroundImage: `url(${meal.image})` }}
-              onClick={() => setSelectedRecipe(meal)}
-            />
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-slate-800 text-lg">{meal.name}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {meals.map((meal) => (
+          <Card key={meal.id}>
+            <CardHeader className="pb-2">
+              <img
+                src={meal.image}
+                alt={meal.name}
+                className="w-full h-48 object-cover rounded-lg mb-2"
+              />
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">{meal.name}</CardTitle>
                 <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(meal)}
-                  >
-                    <Edit className="w-4 h-4" />
+                  <Button size="sm" variant="outline" onClick={() => handleEdit(meal)}>
+                    <Edit className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteMeal(meal.id)}
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    onClick={() => deleteMealMutation.mutate(meal.id)}
+                    disabled={deleteMealMutation.isPending}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <p className="text-slate-600 text-sm mb-3">{meal.description}</p>
-              <div className="flex justify-between items-center text-sm text-slate-500 mb-2">
-                <span>{meal.cookTime}</span>
-                <span>{meal.difficulty}</span>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-600 mb-3">{meal.description}</p>
+              <div className="flex justify-between items-center mb-3">
+                <Badge variant="outline">{meal.difficulty}</Badge>
+                <span className="text-sm text-slate-500">{meal.cookTime}</span>
               </div>
               <div className="text-sm text-slate-600">
                 <strong>Servings:</strong> {meal.servings}<br />
-                <strong>Ingredients:</strong> {meal.ingredients?.length || 0}<br />
-                <strong>Steps:</strong> {meal.instructions?.length || 0}
+                <strong>Ingredients:</strong> {meals.ingredients?.length}<br />
+                <strong>Steps:</strong> {meals.instructions?.length}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {selectedRecipe && (
-        <Dialog open={!!selectedRecipe} onOpenChange={() => setSelectedRecipe(null)}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{selectedRecipe.name}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="aspect-video w-full bg-cover bg-center rounded-lg" 
-                   style={{ backgroundImage: `url(${selectedRecipe.image})` }} />
-              <p className="text-slate-600">{selectedRecipe.description}</p>
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <strong>Cook Time:</strong><br />
-                  {selectedRecipe.cookTime}
-                </div>
-                <div>
-                  <strong>Difficulty:</strong><br />
-                  {selectedRecipe.difficulty}
-                </div>
-                <div>
-                  <strong>Servings:</strong><br />
-                  {selectedRecipe.servings}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Ingredients:</h4>
-                <ul className="list-disc list-inside space-y-1">
-                  {selectedRecipe.ingredients?.map((ing, index) => (
-                    <li key={index} className="text-sm">{ing.amount} {ing.name}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Instructions:</h4>
-                <ol className="list-decimal list-inside space-y-1">
-                  {selectedRecipe.instructions?.map((step, index) => (
-                    <li key={index} className="text-sm">{step}</li>
-                  ))}
-                </ol>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+
     </div>
   );
 }

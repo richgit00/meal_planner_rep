@@ -28,7 +28,7 @@ interface ShoppingListData {
 export default function ShoppingList() {
   const { toast } = useToast();
   const [location] = useLocation();
-
+  
   // Get week from URL params or default to current week being used in meal planner
   const urlParams = new URLSearchParams(window.location.search);
   const weekFromUrl = urlParams.get('week');
@@ -66,15 +66,15 @@ export default function ShoppingList() {
       const startDate = new Date(weekStartDate);
       const endDate = new Date(startDate);
       endDate.setDate(startDate.getDate() + 6);
-
+      
       const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
+      
       const startMonth = monthNames[startDate.getMonth()];
       const endMonth = monthNames[endDate.getMonth()];
       const startDay = startDate.getDate();
       const endDay = endDate.getDate();
       const year = startDate.getFullYear();
-
+      
       if (startMonth === endMonth) {
         return `${startMonth} ${startDay}-${endDay}, ${year}`;
       } else {
@@ -83,7 +83,7 @@ export default function ShoppingList() {
     };
 
     let shareText = `🛒 Shopping List - Week of ${formatWeekRange(currentWeek)}\n\n`;
-
+    
     categories.forEach(category => {
       if (category.items.length > 0) {
         shareText += `${category.icon} ${category.name}:\n`;
@@ -131,9 +131,9 @@ export default function ShoppingList() {
     iconColor: string 
   }) => {
     if (items.length === 0) return null;
-
+    
     const IconComponent = icon;
-
+    
     return (
       <Card>
         <CardContent className="p-6">

@@ -213,70 +213,59 @@ export default function MealPlan() {
       </div>
 
       {/* Weekly Calendar Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 mb-8">
         {weekDays.map((day) => {
           const dayMeal = currentMeals.find(m => m.day === day.name);
           const meal = dayMeal?.mealId ? meals.find(m => m.id === dayMeal.mealId) : null;
 
           return (
-            <Card key={day.name} className="p-3 sm:p-4">
-              <h3 className="font-semibold text-slate-800 mb-3 text-center text-sm sm:text-base">{day.name}</h3>
-
-              {meal ? (
-                <div className="space-y-3">
-                  <div className="relative group">
-                    <img 
-                      src={meal.image} 
-                      alt={meal.name}
-                      className="w-full h-24 sm:h-28 md:h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => handleMealClick(meal.id)}
-                    />
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-1 right-1 sm:top-2 sm:right-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity p-1 h-auto min-h-[32px] min-w-[32px]"
-                      onClick={(e) => {
+            <Card key={day.name}>
+              <CardContent className="p-4">
+                <div className="text-center mb-4">
+                  <h3 className="font-semibold text-slate-800">{day.name}</h3>
+                  <p className="text-sm text-slate-500">{day.date}</p>
+                </div>
+                <div
+                  className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-colors duration-200 min-h-[120px] flex flex-col justify-center"
+                  onClick={() => handleDayClick(day.name)}
+                >
+                  {meal ? (
+                    <div className="space-y-2 relative">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute top-1 right-1 h-6 w-6 p-0 z-10"
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleMealDelete(day.name);
                         }}
-                    >
-                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </Button>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-xs sm:text-sm text-slate-800 mb-1 line-clamp-2">{meal.name}</h4>
-                    <p className="text-xs text-slate-600 mb-2">{meal.cookTime} • {meal.difficulty}</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs min-h-[36px] sm:min-h-[32px]"
-                      onClick={() => {
-                        setSelectedDay(day.name);
-                        setShowMealModal(true);
-                      }}
-                    >
-                      Change Meal
-                    </Button>
-                  </div>
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                      <div
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMealClick(meal.id);
+                        }}
+                      >
+                        <img
+                          src={meal.image}
+                          alt={meal.name}
+                          className="w-full h-20 object-cover rounded-lg"
+                        />
+                        <h4 className="font-medium text-slate-800 text-sm">{meal.name}</h4>
+                        <p className="text-xs text-slate-500">{meal.cookTime}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <Plus className="text-slate-400 text-2xl mb-2 mx-auto" />
+                      <p className="text-slate-500 text-sm">Add Meal</p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center">
-                  <div className="w-full h-24 sm:h-28 md:h-32 bg-slate-100 rounded-lg flex items-center justify-center mb-3">
-                    <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs min-h-[36px] sm:min-h-[32px]"
-                    onClick={() => {
-                      setSelectedDay(day.name);
-                      setShowMealModal(true);
-                    }}
-                  >
-                    Add Meal
-                  </Button>
-                </div>
-              )}
+              </CardContent>
             </Card>
           );
         })}

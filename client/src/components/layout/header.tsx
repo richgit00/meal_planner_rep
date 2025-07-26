@@ -22,7 +22,7 @@ export function Header() {
             <Utensils className="text-primary text-2xl mr-3" />
             <h1 className="text-xl font-bold text-slate-800">MealPlanner Pro</h1>
           </div>
-
+          
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             {navItems.map((item) => (
@@ -44,7 +44,7 @@ export function Header() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-slate-600 hover:text-primary hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="text-slate-600 hover:text-primary p-2"
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -54,22 +54,22 @@ export function Header() {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-200 bg-white">
-            <div className="px-4 py-3 space-y-1">
+            <nav className="py-4 space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   href={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-md font-medium transition-colors duration-200 min-h-[44px] flex items-center ${
+                  className={`block px-4 py-2 font-medium transition-colors duration-200 ${
                     location === item.path
-                      ? "text-primary bg-primary/10"
+                      ? "text-primary bg-blue-50 border-r-4 border-primary"
                       : "text-slate-600 hover:text-primary hover:bg-slate-50"
                   }`}
                 >
                   {item.name}
                 </Link>
               ))}
-            </div>
+            </nav>
           </div>
         )}
       </div>
