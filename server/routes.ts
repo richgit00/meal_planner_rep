@@ -185,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       const selectedMeals = mealPlan.meals
         .filter(day => day.mealId)
         .map(day => mealsData.find(meal => meal.id === day.mealId))
-        .filter(Boolean);
+        .filter(meal => meal && meal.ingredients);
 
       const shoppingList = {
         meatAndFish: [] as Array<{ name: string; quantity: string; checked: boolean }>,
@@ -251,16 +251,18 @@ export async function registerRoutes(app: Express): Promise<void> {
       const ingredientMap = new Map<string, { quantity: string; category: 'fresh' | 'pantry' }>();
 
       selectedMeals.forEach(meal => {
-        if (meal) {
+        if (meal && meal.ingredients && Array.isArray(meal.ingredients)) {
           meal.ingredients.forEach(ingredient => {
-            if (ingredientMap.has(ingredient.name)) {
-              // For simplicity, we'll just use the first quantity found
-              // In a real app, you'd want to aggregate quantities properly
-            } else {
-              ingredientMap.set(ingredient.name, {
-                quantity: ingredient.amount,
-                category: ingredient.category
-              });
+            if (ingredient && ingredient.name && ingredient.amount) {
+              if (ingredientMap.has(ingredient.name)) {
+                // For simplicity, we'll just use the first quantity found
+                // In a real app, you'd want to aggregate quantities properly
+              } else {
+                ingredientMap.set(ingredient.name, {
+                  quantity: ingredient.amount,
+                  category: ingredient.category || 'pantry'
+                });
+              }
             }
           });
         }

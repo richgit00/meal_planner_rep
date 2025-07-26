@@ -57,7 +57,7 @@ export default function ShoppingList() {
       { name: 'Other', items: shoppingList.other, icon: '🛒' },
     ];
 
-    let shareText = '🛒 Shopping List - Week of July 21, 2025\n\n';
+    let shareText = '🛒 Shopping List - Week of July 21-27, 2025\n\n';
     
     categories.forEach(category => {
       if (category.items.length > 0) {

@@ -133,7 +133,7 @@ export default function MealPlan() {
             <ChevronLeft className="h-4 w-4 mr-2" />
             Previous Week
           </Button>
-          <span className="text-lg font-medium text-slate-800">March 11-17, 2024</span>
+          <span className="text-lg font-medium text-slate-800">July 21-27, 2025</span>
           <Button variant="outline">
             Next Week
             <ChevronRight className="h-4 w-4 ml-2" />
