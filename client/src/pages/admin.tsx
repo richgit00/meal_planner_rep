@@ -161,8 +161,8 @@ export default function Admin() {
       difficulty: meal.difficulty,
       servings: meal.servings,
       image: meal.image,
-      ingredientsText: formatIngredientsText(meal.ingredients),
-      instructionsText: formatInstructionsText(meal.instructions),
+      ingredientsText: meal.ingredients ? formatIngredientsText(meal.ingredients) : "",
+      instructionsText: meal.instructions ? formatInstructionsText(meal.instructions) : "",
     });
     setShowMealDialog(true);
   };
