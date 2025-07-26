@@ -8,6 +8,11 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
+// Only bypass SSL certificate validation in development
+if (process.env.NODE_ENV === 'development') {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
   ssl: {
