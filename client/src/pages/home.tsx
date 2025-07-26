@@ -24,8 +24,8 @@ export default function Home() {
       </div>
 
       {/* Main Navigation Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {/* Edit Meal Plan Card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* Meal Plan Card */}
         <Link href="/meal-plan">
           <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary">
             <CardContent className="p-6">
@@ -33,23 +33,8 @@ export default function Home() {
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CalendarDays className="text-primary text-2xl" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Edit Meal Plan</h3>
-                <p className="text-slate-600 text-sm">Plan your weekly meals and organise your dining schedule</p>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-
-        {/* Show Meal Plan Card */}
-        <Link href="/meal-plan">
-          <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="text-accent text-2xl" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">Show Meal Plan</h3>
-                <p className="text-slate-600 text-sm">View your current weekly meal schedule and recipes</p>
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">Meal Plan</h3>
+                <p className="text-slate-600 text-sm">Plan your weekly meals and view your dining schedule</p>
               </div>
             </CardContent>
           </Card>
