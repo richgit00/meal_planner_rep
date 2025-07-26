@@ -123,11 +123,13 @@ export default function Admin() {
     return text.split('\n').filter(line => line.trim());
   };
 
-  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }>) => {
+  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }> | null) => {
+    if (!ingredients) return "";
     return ingredients.map(ing => `${ing.name} | ${ing.amount} | ${ing.category}`).join('\n');
   };
 
-  const formatInstructionsText = (instructions: string[]) => {
+  const formatInstructionsText = (instructions: string[] | null) => {
+    if (!instructions) return "";
     return instructions.join('\n');
   };
 
@@ -162,8 +164,8 @@ export default function Admin() {
       difficulty: meal.difficulty,
       servings: meal.servings,
       image: meal.image,
-      ingredientsText: formatIngredientsText(meal.ingredients),
-      instructionsText: formatInstructionsText(meal.instructions),
+      ingredientsText: meal.ingredients ? formatIngredientsText(meal.ingredients) : "",
+      instructionsText: meal.instructions ? formatInstructionsText(meal.instructions) : "",
     });
     setShowMealDialog(true);
   };
