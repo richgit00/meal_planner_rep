@@ -179,7 +179,8 @@ export default function Admin() {
     }
   };
 
-  
+  const totalMeals = meals?.length ?? 0;
+
 
   if (isLoading) {
     return (
@@ -354,7 +355,7 @@ export default function Admin() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {meals.map((meal) => (
+        {meals && meals.map((meal) => (
           <Card key={meal.id}>
             <CardHeader className="pb-2">
               <img
