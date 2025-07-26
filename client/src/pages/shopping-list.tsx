@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Printer, Share2, Leaf, Package, Fish, Wheat, Apple, ChefHat, ShoppingBasket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +28,12 @@ interface ShoppingListData {
 
 export default function ShoppingList() {
   const { toast } = useToast();
-  const [currentWeek] = useState("2025-07-21");
+  const [location] = useLocation();
+  
+  // Get week from URL params or default to current week being used in meal planner
+  const urlParams = new URLSearchParams(window.location.search);
+  const weekFromUrl = urlParams.get('week');
+  const [currentWeek] = useState(weekFromUrl || "2025-07-21");
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
   const { data: shoppingList, isLoading } = useQuery<ShoppingListData>({
@@ -57,7 +63,27 @@ export default function ShoppingList() {
       { name: 'Other', items: shoppingList.other, icon: '🛒' },
     ];
 
-    let shareText = '🛒 Shopping List - Week of July 21-27, 2025\n\n';
+    const formatWeekRange = (weekStartDate: string) => {
+      const startDate = new Date(weekStartDate);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+      
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      
+      const startMonth = monthNames[startDate.getMonth()];
+      const endMonth = monthNames[endDate.getMonth()];
+      const startDay = startDate.getDate();
+      const endDay = endDate.getDate();
+      const year = startDate.getFullYear();
+      
+      if (startMonth === endMonth) {
+        return `${startMonth} ${startDay}-${endDay}, ${year}`;
+      } else {
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+      }
+    };
+
+    let shareText = `🛒 Shopping List - Week of ${formatWeekRange(currentWeek)}\n\n`;
     
     categories.forEach(category => {
       if (category.items.length > 0) {

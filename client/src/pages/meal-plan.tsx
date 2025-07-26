@@ -172,8 +172,8 @@ export default function MealPlan() {
       return;
     }
 
-    // Navigate to shopping list page
-    setLocation("/shopping-list");
+    // Navigate to shopping list page with current week parameter
+    setLocation(`/shopping-list?week=${currentWeek}`);
   };
 
   return (
