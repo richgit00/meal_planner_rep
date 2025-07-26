@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import { randomUUID } from "crypto";
 
 import { db } from "./db";
 import { meals, mealPlans, pantryItems } from "@shared/schema";
@@ -31,7 +32,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post("/api/meals", async (req, res) => {
     try {
       const validated = insertMealSchema.parse(req.body);
-      const [meal] = await db.insert(meals).values(validated).returning();
+      const mealWithId = { ...validated, id: randomUUID() };
+      const [meal] = await db.insert(meals).values(mealWithId).returning();
       res.status(201).json(meal);
     } catch (error) {
       res.status(400).json({ message: "Invalid meal data" });
@@ -80,7 +82,8 @@ export async function registerRoutes(app: Express): Promise<void> {
       for (const mealData of mealsToImport) {
         try {
           const validated = insertMealSchema.parse(mealData);
-          const [meal] = await db.insert(meals).values(validated).returning();
+          const mealWithId = { ...validated, id: randomUUID() };
+          const [meal] = await db.insert(meals).values(mealWithId).returning();
           createdMeals.push(meal);
         } catch (error) {
           console.error("Failed to import meal:", mealData, error);
@@ -123,7 +126,8 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       console.log("Creating meal plan with data:", req.body);
       const validated = insertMealPlanSchema.parse(req.body);
-      const [mealPlan] = await db.insert(mealPlans).values(validated).returning();
+      const mealPlanWithId = { ...validated, id: randomUUID() };
+      const [mealPlan] = await db.insert(mealPlans).values(mealPlanWithId).returning();
       res.status(201).json(mealPlan);
     } catch (error) {
       console.error("Meal plan creation error:", error);
