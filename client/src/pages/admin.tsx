@@ -387,8 +387,8 @@ export default function Admin() {
               </div>
               <div className="text-sm text-slate-600">
                 <strong>Servings:</strong> {meal.servings}<br />
-                <strong>Ingredients:</strong> {meals.ingredients?.length}<br />
-                <strong>Steps:</strong> {meals.instructions?.length}
+                <strong>Ingredients:</strong> {meal.ingredients?.length}<br />
+                <strong>Steps:</strong> {meal.instructions?.length}
               </div>
             </CardContent>
           </Card>
