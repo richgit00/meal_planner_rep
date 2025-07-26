@@ -21,18 +21,10 @@ if (!finalConnectionString.includes(':6543/')) {
   console.warn("⚠️ DATABASE_URL should use port 6543 for Supabase IPv4 compatibility");
 }
 
-// Configure SSL for Supabase - always use SSL but don't validate certificates
-// This handles the self-signed certificate issues in Replit environment
-const sslConfig = {
-  rejectUnauthorized: false,
-  // Additional SSL options for compatibility
-  ca: false,
-  checkServerIdentity: false
-};
-
+// Disable SSL completely for Replit environment to avoid certificate issues
 const connectionConfig = {
-  connectionString: finalConnectionString,
-  ssl: sslConfig,
+  connectionString: finalConnectionString.replace('sslmode=require', 'sslmode=disable'),
+  ssl: false,
   // Additional connection settings for stability
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
