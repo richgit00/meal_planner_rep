@@ -266,11 +266,12 @@ export default function Pantry() {
                         </div>
                         <Button
                           size="sm"
-                          className={`text-xs ml-2 !border ${
-                            addedToShoppingList.has(item.id) 
-                              ? "!bg-green-600 hover:!bg-green-700 !text-white !border-green-600" 
-                              : "!bg-blue-600 hover:!bg-blue-700 !text-white !border-blue-600"
-                          }`}
+                          style={{
+                            backgroundColor: addedToShoppingList.has(item.id) ? '#16a34a' : '#2563eb',
+                            borderColor: addedToShoppingList.has(item.id) ? '#16a34a' : '#2563eb',
+                            color: 'white'
+                          }}
+                          className="text-xs ml-2 border hover:opacity-90"
                           onClick={() => handleAddToShoppingList(item.id, item.name)}
                         >
                           {addedToShoppingList.has(item.id) ? "Added to List" : "Add to List"}
