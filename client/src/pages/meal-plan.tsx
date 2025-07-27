@@ -47,12 +47,11 @@ const formatWeekRange = (weekStartDate: string) => {
   const endMonth = monthNames[endDate.getMonth()];
   const startDay = startDate.getDate();
   const endDay = endDate.getDate();
-  const year = startDate.getFullYear();
 
   if (startMonth === endMonth) {
-    return `${startMonth} ${startDay}-${endDay}, ${year}`;
+    return `${startMonth} ${startDay}-${endDay}`;
   } else {
-    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
   }
 };
 
@@ -63,6 +62,15 @@ const addWeeks = (dateString: string, weeks: number) => {
   return date.toISOString().split('T')[0];
 };
 
+// Helper function to get the current week's Monday
+const getCurrentWeekMonday = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
+  const monday = new Date(today.setDate(diff));
+  return monday.toISOString().split('T')[0];
+};
+
 export default function MealPlan() {
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
@@ -70,7 +78,7 @@ export default function MealPlan() {
   const [showMealModal, setShowMealModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [currentWeek, setCurrentWeek] = useState("2025-07-21"); // Week starting Monday July 21, 2025
+  const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -162,12 +170,24 @@ export default function MealPlan() {
   
 
   const goToPreviousWeek = () => {
-    setCurrentWeek(addWeeks(currentWeek, -1));
+    const newWeek = addWeeks(currentWeek, -1);
+    const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
+    if (newWeek >= earliestWeek) {
+      setCurrentWeek(newWeek);
+    }
   };
 
   const goToNextWeek = () => {
-    setCurrentWeek(addWeeks(currentWeek, 1));
+    const newWeek = addWeeks(currentWeek, 1);
+    const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
+    if (newWeek <= latestWeek) {
+      setCurrentWeek(newWeek);
+    }
   };
+
+  // Check if navigation buttons should be disabled
+  const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
+  const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
 
   const handleGenerateShoppingList = () => {
     // Check if there are any meals planned for the week
@@ -191,12 +211,12 @@ export default function MealPlan() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={goToPreviousWeek}>
+          <Button variant="outline" onClick={goToPreviousWeek} disabled={isPreviousDisabled}>
             <ChevronLeft className="h-4 w-4 mr-2" />
             Previous Week
           </Button>
           <span className="text-lg font-medium text-slate-800">{formatWeekRange(currentWeek)}</span>
-          <Button variant="outline" onClick={goToNextWeek}>
+          <Button variant="outline" onClick={goToNextWeek} disabled={isNextDisabled}>
             Next Week
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
