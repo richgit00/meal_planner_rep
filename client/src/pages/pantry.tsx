@@ -284,29 +284,7 @@ export default function Pantry() {
             ))}
           </div>
 
-          {/* Pantry Summary */}
-          <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800">Weekly Pantry Status</h3>
-                <p className="text-slate-600">Items needed for this week's meal plan</p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-xl font-bold text-accent">{statusCounts["in-stock"] || 0}</div>
-                  <div className="text-xs text-slate-600">In Stock</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-yellow-600">{statusCounts["low-stock"] || 0}</div>
-                  <div className="text-xs text-slate-600">Low Stock</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-red-500">{statusCounts["out-of-stock"] || 0}</div>
-                  <div className="text-xs text-slate-600">Out of Stock</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          
         </>
       )}
     </div>
