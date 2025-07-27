@@ -245,13 +245,13 @@ export default function MealPlan() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="absolute top-1 right-1 h-6 w-6 p-0 z-10"
+                        className="absolute top-1 right-1 h-8 w-8 sm:h-6 sm:w-6 p-0 z-10"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleMealDelete(day.name);
                         }}
                       >
-                        <X className="h-3 w-3" />
+                        <X className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
                       <div
                         className="cursor-pointer"
