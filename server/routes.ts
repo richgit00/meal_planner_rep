@@ -42,17 +42,29 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.put("/api/meals/:id", async (req, res) => {
     try {
+      console.log(`🔄 PUT /api/meals/${req.params.id} called`);
+      console.log(`📤 Request body:`, req.body);
+      
       const validated = insertMealSchema.partial().parse(req.body);
+      console.log(`✅ Validated data:`, validated);
+      
       const [meal] = await db.update(meals)
         .set(validated)
         .where(eq(meals.id, req.params.id))
         .returning();
+        
+      console.log(`📊 Database update result:`, meal);
+      
       if (!meal) {
+        console.log(`❌ Meal not found with ID: ${req.params.id}`);
         return res.status(404).json({ message: "Meal not found" });
       }
+      
+      console.log(`✅ Successfully updated meal:`, meal);
       res.json(meal);
     } catch (error) {
-      res.status(400).json({ message: "Invalid meal data" });
+      console.error(`❌ Error updating meal:`, error);
+      res.status(400).json({ message: "Invalid meal data", error: error.message });
     }
   });
 

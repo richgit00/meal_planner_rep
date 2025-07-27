@@ -12,6 +12,9 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  console.log(`🌐 API Request: ${method} ${url}`);
+  console.log(`📤 Request body:`, data);
+
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -19,7 +22,14 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
+  console.log(`📥 Response status: ${res.status} ${res.statusText}`);
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error(`❌ API Error: ${res.status} - ${errorText}`);
+    throw new Error(`HTTP error! status: ${res.status} - ${errorText}`);
+  }
+
   return res;
 }
 
