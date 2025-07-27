@@ -65,16 +65,19 @@ export default function Admin() {
 
   const updateMealMutation = useMutation({
     mutationFn: async ({ id, ...mealData }: { id: string } & Partial<InsertMeal>) => {
+      console.log("Updating meal with ID:", id, "Data:", mealData);
       return await apiRequest("PUT", `/api/meals/${id}`, mealData);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Meal update successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
       setShowMealDialog(false);
       setEditingMeal(null);
       form.reset();
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Meal update failed:", error);
       toast({ title: "Failed to update meal", variant: "destructive" });
     },
   });
@@ -130,6 +133,9 @@ export default function Admin() {
   };
 
   const onSubmit = (data: MealFormData) => {
+    console.log("Form submitted with data:", data);
+    console.log("Editing meal:", editingMeal);
+    
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
 
@@ -144,9 +150,13 @@ export default function Admin() {
       instructions,
     };
 
+    console.log("Processed meal data:", mealData);
+
     if (editingMeal) {
+      console.log("Calling update mutation for meal ID:", editingMeal.id);
       updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
     } else {
+      console.log("Calling create mutation");
       createMealMutation.mutate(mealData);
     }
   };
