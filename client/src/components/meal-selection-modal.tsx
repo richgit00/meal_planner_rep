@@ -58,11 +58,11 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-semibold text-slate-800">Choose a Meal</DialogTitle>
         </DialogHeader>
-        <div className="p-6 overflow-y-auto max-h-[70vh]">
+        <div className="flex-1 overflow-y-auto p-6">
           {sortedGroups.map((proteinType) => (
             <div key={proteinType} className="mb-8">
               <h3 className="text-lg font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">
