@@ -132,8 +132,25 @@ export default function ShoppingList() {
   if (!shoppingList) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h2 className="text-2xl font-bold text-slate-800">Shopping List</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Button variant="outline" onClick={goToPreviousWeek} size="sm">
+                <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Previous Week</span>
+                <span className="sm:hidden">Prev</span>
+              </Button>
+              <Button variant="outline" onClick={goToNextWeek} size="sm">
+                <span className="hidden sm:inline">Next Week</span>
+                <span className="sm:hidden">Next</span>
+                <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
+              </Button>
+            </div>
+            <span className="text-sm sm:text-lg font-medium text-slate-800 order-first sm:order-none">{formatWeekRange(currentWeek)}</span>
+          </div>
+        </div>
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">Shopping List</h2>
           <p className="text-slate-600">No meal plan found for this week. Please create a meal plan first.</p>
         </div>
       </div>
@@ -187,22 +204,27 @@ export default function ShoppingList() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h2 className="text-2xl font-bold text-slate-800">Shopping List</h2>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={goToPreviousWeek}>
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous Week
-          </Button>
-          <span className="text-lg font-medium text-slate-800">{formatWeekRange(currentWeek)}</span>
-          <Button variant="outline" onClick={goToNextWeek}>
-            Next Week
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-          <Button onClick={handleShareList}>
-            <Share2 className="h-4 w-4 mr-2" />
-            Share List
-          </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <div className="flex items-center space-x-2 sm:space-x-4 order-2 sm:order-1">
+            <Button variant="outline" onClick={goToPreviousWeek} size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Previous Week</span>
+              <span className="sm:hidden">Prev</span>
+            </Button>
+            <Button variant="outline" onClick={goToNextWeek} size="sm">
+              <span className="hidden sm:inline">Next Week</span>
+              <span className="sm:hidden">Next</span>
+              <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
+            </Button>
+            <Button onClick={handleShareList} size="sm">
+              <Share2 className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Share List</span>
+              <span className="sm:hidden">Share</span>
+            </Button>
+          </div>
+          <span className="text-sm sm:text-lg font-medium text-slate-800 order-1 sm:order-2">{formatWeekRange(currentWeek)}</span>
         </div>
       </div>
 
