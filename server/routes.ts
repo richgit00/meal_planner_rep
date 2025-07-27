@@ -181,6 +181,9 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Shopping List Generation
   app.get("/api/shopping-list/:weekStartDate", async (req, res) => {
     try {
+      const { addedPantryItems } = req.query;
+      const addedItems = addedPantryItems ? JSON.parse(addedPantryItems as string) : [];
+      
       const mealPlanResult = await db.select().from(mealPlans).where(eq(mealPlans.weekStartDate, req.params.weekStartDate));
       if (mealPlanResult.length === 0) {
         return res.status(404).json({ message: "Meal plan not found" });
@@ -297,12 +300,29 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       });
 
+      // Add manually added pantry items to the shopping list
+      const addedPantryItemsForList = [];
+      if (addedItems.length > 0) {
+        for (const itemId of addedItems) {
+          const pantryItem = pantryItemsData.find(p => p.id === itemId);
+          if (pantryItem) {
+            addedPantryItemsForList.push({
+              name: pantryItem.name,
+              quantity: "1", // Default quantity for manually added items
+              checked: false
+            });
+          }
+        }
+      }
+
       const totalItems = shoppingList.meatAndFish.length + shoppingList.vegetables.length + 
                         shoppingList.fruit.length + shoppingList.seasoning.length + 
-                        shoppingList.staples.length + shoppingList.other.length;
+                        shoppingList.staples.length + shoppingList.other.length + 
+                        addedPantryItemsForList.length;
 
       res.json({
         ...shoppingList,
+        addedPantryItems: addedPantryItemsForList,
         summary: {
           totalItems
         }

@@ -47,6 +47,18 @@ const getCurrentWeekMonday = () => {
 export default function Pantry() {
   const { toast } = useToast();
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
+  
+  // Initialize added items from localStorage
+  const getStoredAddedItems = () => {
+    try {
+      const stored = localStorage.getItem(`addedPantryItems_${currentWeek}`);
+      return stored ? new Set(JSON.parse(stored)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  };
+  
+  const [addedToShoppingList, setAddedToShoppingList] = useState<Set<string>>(getStoredAddedItems());
 
   const { data: pantryItems = [], isLoading: pantryLoading } = useQuery<PantryItem[]>({
     queryKey: ["/api/pantry-items"],
@@ -79,6 +91,22 @@ export default function Pantry() {
   // Check if navigation buttons should be disabled
   const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
   const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
+
+  const handleAddToShoppingList = (itemId: string, itemName: string) => {
+    const newAddedItems = new Set(addedToShoppingList);
+    if (newAddedItems.has(itemId)) {
+      newAddedItems.delete(itemId);
+      toast({ title: `${itemName} removed from shopping list` });
+    } else {
+      newAddedItems.add(itemId);
+      toast({ title: `${itemName} added to shopping list` });
+    }
+    setAddedToShoppingList(newAddedItems);
+    
+    // Store in localStorage for persistence
+    const itemsArray = Array.from(newAddedItems);
+    localStorage.setItem(`addedPantryItems_${currentWeek}`, JSON.stringify(itemsArray));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -236,9 +264,18 @@ export default function Pantry() {
                             )}
                           </div>
                         </div>
-                        <Badge variant={getStatusBadgeVariant(item.status)} className="text-xs ml-2">
-                          {getStatusText(item.status)}
-                        </Badge>
+                        <Button
+                          size="sm"
+                          variant={addedToShoppingList.has(item.id) ? "default" : "outline"}
+                          className={`text-xs ml-2 ${
+                            addedToShoppingList.has(item.id) 
+                              ? "bg-green-600 hover:bg-green-700 text-white" 
+                              : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                          }`}
+                          onClick={() => handleAddToShoppingList(item.id, item.name)}
+                        >
+                          {addedToShoppingList.has(item.id) ? "Added to List" : "Add to List"}
+                        </Button>
                       </div>
                     ))}
                   </div>

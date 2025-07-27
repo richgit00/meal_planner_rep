@@ -20,6 +20,7 @@ interface ShoppingListData {
   seasoning: ShoppingListItem[];
   staples: ShoppingListItem[];
   other: ShoppingListItem[];
+  addedPantryItems: ShoppingListItem[];
   summary: {
     totalItems: number;
   };
@@ -70,9 +71,33 @@ export default function ShoppingList() {
   const weekFromUrl = urlParams.get('week');
   const [currentWeek, setCurrentWeek] = useState(weekFromUrl || getCurrentWeekMonday());
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  
+  // Get added pantry items from localStorage or URL params
+  const getAddedPantryItems = () => {
+    try {
+      const stored = localStorage.getItem(`addedPantryItems_${currentWeek}`);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  };
+  
+  const [addedPantryItems] = useState<string[]>(getAddedPantryItems());
 
   const { data: shoppingList, isLoading } = useQuery<ShoppingListData>({
-    queryKey: ["/api/shopping-list", currentWeek],
+    queryKey: ["/api/shopping-list", currentWeek, addedPantryItems],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (addedPantryItems.length > 0) {
+        params.append('addedPantryItems', JSON.stringify(addedPantryItems));
+      }
+      const url = `/api/shopping-list/${currentWeek}${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch shopping list');
+      }
+      return response.json();
+    },
     retry: false,
   });
 
@@ -116,6 +141,7 @@ export default function ShoppingList() {
       { name: 'Seasoning', items: shoppingList.seasoning, icon: '🧂' },
       { name: 'Staples', items: shoppingList.staples, icon: '🌾' },
       { name: 'Other', items: shoppingList.other, icon: '🛒' },
+      { name: 'Added Pantry Items', items: shoppingList.addedPantryItems || [], icon: '📦' },
     ];
 
     let shareText = `🛒 Shopping List - Week of ${formatWeekRange(currentWeek)}\n\n`;
@@ -284,6 +310,12 @@ export default function ShoppingList() {
           items={shoppingList.other} 
           icon={ShoppingBasket} 
           iconColor="text-gray-600" 
+        />
+        <CategoryCard 
+          title="Added Pantry Items" 
+          items={shoppingList.addedPantryItems || []} 
+          icon={Package} 
+          iconColor="text-blue-600" 
         />
       </div>
 
