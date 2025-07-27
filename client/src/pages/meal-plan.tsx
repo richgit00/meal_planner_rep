@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, Save, ShoppingCart, Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MealSelectionModal } from "@/components/meal-selection-modal";
@@ -159,16 +159,7 @@ export default function MealPlan() {
     }
   };
 
-  const saveMealPlan = () => {
-    if (mealPlan) {
-      updateMealPlanMutation.mutate({ id: mealPlan.id, meals: currentMeals });
-    } else {
-      createMealPlanMutation.mutate({
-        weekStartDate: currentWeek,
-        meals: currentMeals,
-      });
-    }
-  };
+  
 
   const goToPreviousWeek = () => {
     setCurrentWeek(addWeeks(currentWeek, -1));
@@ -272,11 +263,7 @@ export default function MealPlan() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center space-x-4">
-        <Button onClick={saveMealPlan} disabled={createMealPlanMutation.isPending || updateMealPlanMutation.isPending}>
-          <Save className="h-4 w-4 mr-2" />
-          Save Meal Plan
-        </Button>
+      <div className="flex justify-center">
         <Button 
           variant="outline" 
           className="bg-accent text-white hover:bg-emerald-600"
