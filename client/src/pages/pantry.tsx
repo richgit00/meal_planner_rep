@@ -266,10 +266,10 @@ export default function Pantry() {
                         </div>
                         <Button
                           size="sm"
-                          className={`text-xs ml-2 ${
+                          className={`text-xs ml-2 !border ${
                             addedToShoppingList.has(item.id) 
-                              ? "bg-green-600 hover:bg-green-700 text-white border-green-600" 
-                              : "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                              ? "!bg-green-600 hover:!bg-green-700 !text-white !border-green-600" 
+                              : "!bg-blue-600 hover:!bg-blue-700 !text-white !border-blue-600"
                           }`}
                           onClick={() => handleAddToShoppingList(item.id, item.name)}
                         >
