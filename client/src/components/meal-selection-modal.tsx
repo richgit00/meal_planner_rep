@@ -58,7 +58,7 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0 flex-shrink-0">
           <DialogTitle className="text-xl font-semibold text-slate-800">Choose a Meal</DialogTitle>
         </DialogHeader>
