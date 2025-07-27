@@ -119,7 +119,7 @@ export default function Pantry() {
     }
   };
 
-  // Get ingredients needed for the current week's meals
+  // Get ingredients needed for the current week's meals with quantities
   const getRequiredPantryItems = () => {
     if (!mealPlan?.meals || meals.length === 0) {
       return [];
@@ -131,19 +131,32 @@ export default function Pantry() {
 
     const weeklyMeals = meals.filter(meal => weeklyMealIds.includes(meal.id));
     
-    const requiredIngredients = new Set<string>();
+    // Aggregate ingredients by name with quantities
+    const ingredientMap = new Map<string, string>();
     weeklyMeals.forEach(meal => {
       if (meal.ingredients) {
         meal.ingredients.forEach(ingredient => {
-          requiredIngredients.add(ingredient.name.toLowerCase());
+          if (ingredient.category === 'pantry') {
+            const ingredientName = ingredient.name.toLowerCase();
+            if (ingredientMap.has(ingredientName)) {
+              // Combine quantities when the same ingredient appears multiple times
+              const existing = ingredientMap.get(ingredientName)!;
+              ingredientMap.set(ingredientName, existing + " + " + ingredient.amount);
+            } else {
+              ingredientMap.set(ingredientName, ingredient.amount);
+            }
+          }
         });
       }
     });
 
-    // Filter pantry items to only show those needed for this week's recipes
-    return pantryItems.filter(item => 
-      requiredIngredients.has(item.name.toLowerCase())
-    );
+    // Filter pantry items to only show those needed for this week's recipes and add quantities
+    return pantryItems
+      .filter(item => ingredientMap.has(item.name.toLowerCase()))
+      .map(item => ({
+        ...item,
+        requiredQuantity: ingredientMap.get(item.name.toLowerCase()) || ""
+      }));
   };
 
   const requiredPantryItems = getRequiredPantryItems();
@@ -210,13 +223,20 @@ export default function Pantry() {
                   <div className="space-y-3">
                     {items.map((item) => (
                       <div key={item.id} className="flex items-center justify-between py-2">
-                        <div className="flex items-center">
+                        <div className="flex items-center flex-1">
                           <div
                             className={`w-3 h-3 rounded-full mr-3 ${getStatusColor(item.status)}`}
                           />
-                          <span className="text-slate-800">{item.name}</span>
+                          <div className="flex-1">
+                            <span className="text-slate-800">{item.name}</span>
+                            {(item as any).requiredQuantity && (
+                              <div className="text-xs text-slate-500 mt-1">
+                                Needed: {(item as any).requiredQuantity}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <Badge variant={getStatusBadgeVariant(item.status)} className="text-xs">
+                        <Badge variant={getStatusBadgeVariant(item.status)} className="text-xs ml-2">
                           {getStatusText(item.status)}
                         </Badge>
                       </div>
