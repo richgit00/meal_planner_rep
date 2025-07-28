@@ -236,7 +236,7 @@ export default function Admin() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast({ title: "CSV template downloaded successfully!" });
   };
 
@@ -250,7 +250,7 @@ export default function Admin() {
       try {
         const csvText = e.target?.result as string;
         const lines = csvText.split('\n').filter(line => line.trim());
-        
+
         if (lines.length < 2) {
           toast({ title: "Invalid CSV: No data rows found", variant: "destructive" });
           return;
@@ -263,7 +263,7 @@ export default function Admin() {
             const fields = [];
             let current = '';
             let inQuotes = false;
-            
+
             for (let i = 0; i < line.length; i++) {
               const char = line[i];
               if (char === '"') {
@@ -314,7 +314,7 @@ export default function Admin() {
 
         // Import the parsed meals
         bulkImportMutation.mutate(meals);
-        
+
       } catch (error) {
         console.error('CSV parsing error:', error);
         toast({ 
@@ -324,11 +324,11 @@ export default function Admin() {
         });
       }
     };
-    
+
     reader.onerror = () => {
       toast({ title: "Failed to read CSV file", variant: "destructive" });
     };
-    
+
     reader.readAsText(file);
   };
 
@@ -346,6 +346,39 @@ export default function Admin() {
       csvFileInputRef.current.value = '';
     }
   };
+
+
+  const cleanupPantryMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/pantry-items/cleanup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to cleanup pantry items");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Pantry Cleanup Complete",
+        description: `Removed ${data.removedItems} unused items. ${data.remainingItems} items remaining.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/pantry-items"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Cleanup Failed",
+        description: error.message || "Failed to cleanup pantry items",
+        variant: "destructive",
+      });
+    },
+  });
 
 
   if (isLoading) {
@@ -379,6 +412,15 @@ export default function Admin() {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
+          <Button 
+            onClick={() => cleanupPantryMutation.mutate()} 
+            variant="outline" 
+            className="flex items-center space-x-2 text-orange-600 border-orange-600 hover:bg-orange-50"
+            disabled={cleanupPantryMutation.isPending}
+          >
+            <span>🧹</span>
+            <span>Clean Pantry</span>
+          </Button>
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
@@ -535,7 +577,7 @@ export default function Admin() {
                         // Get current form values first
                         const formData = form.getValues();
                         console.log("Current form data:", formData);
-                        
+
                         // Check for required fields manually since form.trigger() might be overly strict
                         const requiredFieldsValid = 
                           formData.name?.trim() && 
@@ -557,7 +599,7 @@ export default function Admin() {
                         console.log("✅ Basic validation passed")
 
                         // Form data already retrieved above for validation
-                        
+
                         // Parse and prepare data
                         const ingredients = parseIngredientsText(formData.ingredientsText);
                         const instructions = parseInstructionsText(formData.instructionsText);
@@ -589,10 +631,10 @@ export default function Admin() {
                             result = await createMealMutation.mutateAsync(mealData);
                             console.log("Create result:", result);
                           }
-                          
+
                           console.log("✅ API call successful, result:", result);
                           // Success - mutations have onSuccess handlers that will close dialog
-                          
+
                         } catch (error) {
                           console.error("❌ Save operation failed:", error);
                           console.error("Error details:", {
@@ -600,13 +642,13 @@ export default function Admin() {
                             status: error?.status,
                             response: error?.response
                           });
-                          
+
                           toast({
                             title: "Save Failed",
                             description: `Failed to ${editingMeal ? 'update' : 'create'} meal: ${error?.message || 'Unknown error'}`,
                             variant: "destructive"
                           });
-                          
+
                           // Don't close dialog on error so user can retry
                           return;
                         }

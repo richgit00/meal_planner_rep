@@ -210,6 +210,68 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  app.post("/api/pantry-items/cleanup", async (req, res) => {
+    try {
+      console.log("🧹 Starting pantry cleanup...");
+      
+      // Get all meals and their ingredients
+      const allMeals = await db.select().from(meals);
+      
+      // Extract all pantry ingredients from meals
+      const usedPantryIngredients = new Set<string>();
+      
+      allMeals.forEach(meal => {
+        if (meal.ingredients && Array.isArray(meal.ingredients)) {
+          meal.ingredients.forEach(ingredient => {
+            if (ingredient.category === 'pantry' && ingredient.name) {
+              const normalizedName = ingredient.name.toLowerCase().trim();
+              usedPantryIngredients.add(normalizedName);
+            }
+          });
+        }
+      });
+      
+      // Get current pantry items
+      const currentPantryItems = await db.select().from(pantryItems);
+      
+      // Find which pantry items are actually used
+      const usedPantryItems = currentPantryItems.filter(item => {
+        const itemNameLower = item.name.toLowerCase().trim();
+        return Array.from(usedPantryIngredients).some(ingredient => 
+          ingredient.includes(itemNameLower) || 
+          itemNameLower.includes(ingredient) ||
+          ingredient === itemNameLower
+        );
+      });
+      
+      // Find items to remove
+      const itemsToRemove = currentPantryItems.filter(item => 
+        !usedPantryItems.some(usedItem => usedItem.id === item.id)
+      );
+      
+      // Remove unused pantry items
+      let removedCount = 0;
+      if (itemsToRemove.length > 0) {
+        for (const item of itemsToRemove) {
+          await db.delete(pantryItems).where(eq(pantryItems.id, item.id));
+          removedCount++;
+          console.log(`🗑️ Removed: ${item.name}`);
+        }
+      }
+      
+      res.json({
+        message: `Pantry cleanup completed`,
+        removedItems: removedCount,
+        remainingItems: usedPantryItems.length,
+        removedItemNames: itemsToRemove.map(item => item.name)
+      });
+      
+    } catch (error) {
+      console.error("❌ Pantry cleanup error:", error);
+      res.status(500).json({ message: "Failed to cleanup pantry items", error: error.message });
+    }
+  });
+
   app.put("/api/pantry-items/:id", async (req, res) => {
     try {
       const [updatedItem] = await db.update(pantryItems)
