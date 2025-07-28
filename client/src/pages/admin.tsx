@@ -219,6 +219,53 @@ export default function Admin() {
 
   const totalMeals = meals?.length ?? 0;
 
+  // Function to determine protein type from meal name and ingredients (same as meal selection modal)
+  const getProteinType = (meal: Meal): string => {
+    const name = meal.name.toLowerCase();
+    const ingredientsText = meal.ingredients?.map(ing => ing.name.toLowerCase()).join(' ') || '';
+    
+    if (name.includes('beef') || ingredientsText.includes('beef') || name.includes('steak') || ingredientsText.includes('steak')) {
+      return 'Beef';
+    }
+    if (name.includes('chicken') || ingredientsText.includes('chicken')) {
+      return 'Chicken';
+    }
+    if (name.includes('pork') || ingredientsText.includes('pork') || name.includes('ham') || ingredientsText.includes('ham')) {
+      return 'Pork';
+    }
+    if (name.includes('salmon') || name.includes('fish') || name.includes('cod') || name.includes('tuna') || 
+        ingredientsText.includes('salmon') || ingredientsText.includes('fish') || ingredientsText.includes('cod')) {
+      return 'Fish';
+    }
+    if (name.includes('turkey') || ingredientsText.includes('turkey')) {
+      return 'Turkey';
+    }
+    if (name.includes('lamb') || ingredientsText.includes('lamb')) {
+      return 'Lamb';
+    }
+    if (name.includes('vegetable') || name.includes('vegan') || name.includes('veggie') || 
+        (!ingredientsText.includes('chicken') && !ingredientsText.includes('beef') && 
+         !ingredientsText.includes('pork') && !ingredientsText.includes('fish') &&
+         !ingredientsText.includes('turkey') && !ingredientsText.includes('lamb'))) {
+      return 'Vegetarian';
+    }
+    return 'Other';
+  };
+
+  // Group meals by protein type
+  const groupedMeals = meals.reduce((groups, meal) => {
+    const proteinType = getProteinType(meal);
+    if (!groups[proteinType]) {
+      groups[proteinType] = [];
+    }
+    groups[proteinType].push(meal);
+    return groups;
+  }, {} as Record<string, Meal[]>);
+
+  // Define the order of protein types
+  const proteinOrder = ['Beef', 'Chicken', 'Pork', 'Fish', 'Turkey', 'Lamb', 'Vegetarian', 'Other'];
+  const sortedGroups = proteinOrder.filter(type => groupedMeals[type]);
+
   const downloadCSVTemplate = () => {
     const csvContent = [
       // CSV Header
@@ -668,49 +715,58 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {meals && meals.map((meal) => (
-          <Card key={meal.id}>
-            <CardHeader className="pb-2">
-              <img
-                src={meal.image}
-                alt={meal.name}
-                className="w-full h-48 object-cover rounded-lg mb-2"
-              />
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{meal.name}</CardTitle>
-                <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => handleEdit(meal)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to delete "${meal.name}"? This action cannot be undone.`)) {
-                        deleteMealMutation.mutate(meal.id);
-                      }
-                    }}
-                    disabled={deleteMealMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600 mb-3">{meal.description}</p>
-              <div className="flex justify-between items-center mb-3">
-                <Badge variant="outline">{meal.difficulty}</Badge>
-                <span className="text-sm text-slate-500">{meal.cookTime}</span>
-              </div>
-              <div className="text-sm text-slate-600">
-                <strong>Servings:</strong> {meal.servings}<br />
-                <strong>Ingredients:</strong> {meal.ingredients?.length || 0}<br />
-                <strong>Steps:</strong> {meal.instructions?.length || 0}
-              </div>
-            </CardContent>
-          </Card>
+      <div className="space-y-8">
+        {sortedGroups.map((proteinType) => (
+          <div key={proteinType}>
+            <h3 className="text-xl font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">
+              {proteinType} ({groupedMeals[proteinType].length})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {groupedMeals[proteinType].map((meal) => (
+                <Card key={meal.id}>
+                  <CardHeader className="pb-2">
+                    <img
+                      src={meal.image}
+                      alt={meal.name}
+                      className="w-full h-48 object-cover rounded-lg mb-2"
+                    />
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{meal.name}</CardTitle>
+                      <div className="flex space-x-2">
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(meal)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to delete "${meal.name}"? This action cannot be undone.`)) {
+                              deleteMealMutation.mutate(meal.id);
+                            }
+                          }}
+                          disabled={deleteMealMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-slate-600 mb-3">{meal.description}</p>
+                    <div className="flex justify-between items-center mb-3">
+                      <Badge variant="outline">{meal.difficulty}</Badge>
+                      <span className="text-sm text-slate-500">{meal.cookTime}</span>
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      <strong>Servings:</strong> {meal.servings}<br />
+                      <strong>Ingredients:</strong> {meal.ingredients?.length || 0}<br />
+                      <strong>Steps:</strong> {meal.instructions?.length || 0}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
