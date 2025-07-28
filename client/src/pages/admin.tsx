@@ -49,18 +49,23 @@ export default function Admin() {
   });
 
   const handleCloseDialog = () => {
+    console.log("Closing dialog...");
     setShowMealDialog(false);
     setEditingMeal(null);
-    form.reset({
-      name: "",
-      description: "",
-      cookTime: "",
-      difficulty: "Easy",
-      servings: 4,
-      image: "",
-      ingredientsText: "",
-      instructionsText: "",
-    });
+    
+    // Use setTimeout to ensure state updates properly
+    setTimeout(() => {
+      form.reset({
+        name: "",
+        description: "",
+        cookTime: "",
+        difficulty: "Easy",
+        servings: 4,
+        image: "",
+        ingredientsText: "",
+        instructionsText: "",
+      });
+    }, 100);
   };
 
   const createMealMutation = useMutation({
@@ -155,30 +160,42 @@ export default function Admin() {
 
   const onSubmit = (data: MealFormData) => {
     console.log("Form submitted with data:", data);
-    const ingredients = parseIngredientsText(data.ingredientsText);
-    const instructions = parseInstructionsText(data.instructionsText);
+    
+    try {
+      const ingredients = parseIngredientsText(data.ingredientsText);
+      const instructions = parseInstructionsText(data.instructionsText);
 
-    const mealData: InsertMeal = {
-      name: data.name,
-      description: data.description,
-      cookTime: data.cookTime,
-      difficulty: data.difficulty,
-      servings: data.servings,
-      image: data.image,
-      ingredients,
-      instructions,
-    };
+      const mealData: InsertMeal = {
+        name: data.name,
+        description: data.description,
+        cookTime: data.cookTime,
+        difficulty: data.difficulty,
+        servings: data.servings,
+        image: data.image,
+        ingredients,
+        instructions,
+      };
 
-    // Close dialog immediately
-    handleCloseDialog();
-
-    console.log("Submitting meal data:", mealData);
-    if (editingMeal) {
-      console.log("Updating meal with ID:", editingMeal.id);
-      updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
-    } else {
-      console.log("Creating new meal");
-      createMealMutation.mutate(mealData);
+      console.log("Submitting meal data:", mealData);
+      
+      if (editingMeal) {
+        console.log("Updating meal with ID:", editingMeal.id);
+        updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
+      } else {
+        console.log("Creating new meal");
+        createMealMutation.mutate(mealData);
+      }
+      
+      // Close dialog after successful submission
+      handleCloseDialog();
+      
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast({ 
+        title: "Form validation failed", 
+        description: "Please check your inputs and try again",
+        variant: "destructive" 
+      });
     }
   };
 
