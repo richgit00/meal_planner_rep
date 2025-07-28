@@ -25,7 +25,6 @@ export const pantryItems = pgTable("pantry_items", {
   id: varchar("id").primaryKey().notNull(),
   name: text("name").notNull(),
   category: text("category").notNull(),
-  status: text("status").notNull(), // 'in-stock' | 'low-stock' | 'out-of-stock'
 });
 
 export const insertMealSchema = createInsertSchema(meals).omit({
