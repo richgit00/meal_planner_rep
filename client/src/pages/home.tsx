@@ -9,9 +9,6 @@ export default function Home() {
     <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
       <div className="text-center mb-8 sm:mb-12">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-3 sm:mb-4 px-2">Weekly Meal Planner</h1>
-        <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto px-2">
-          Plan your weekly meals, generate shopping lists automatically, and manage your pantry inventory all in one place.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
@@ -54,7 +51,7 @@ export default function Home() {
                   <Package className="text-green-500 text-xl sm:text-2xl" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-2">Pantry</h3>
-                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">Track your pantry inventory and expiration dates</p>
+                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">View required pantry items and add to shopping list</p>
               </div>
             </CardContent>
           </Card>
@@ -69,7 +66,7 @@ export default function Home() {
                   <Package className="text-purple-500 text-xl sm:text-2xl" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-2">Admin</h3>
-                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">Manage meals and system settings</p>
+                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">Edit and add meals</p>
               </div>
             </CardContent>
           </Card>
