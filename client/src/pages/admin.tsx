@@ -383,54 +383,86 @@ export default function Admin() {
                       type="button"
                       onClick={async () => {
                         console.log("Save button clicked");
+                        console.log("Current editing meal:", editingMeal);
 
                         // Validate form first
                         const isValid = await form.trigger();
                         console.log("Form validation result:", isValid);
+                        console.log("Form errors:", form.formState.errors);
 
-                        if (isValid) {
-                          // Only submit if validation passes
-                          console.log("Form is valid, submitting...");
-                          const formData = form.getValues();
-                          
-                          // Parse and prepare data
-                          const ingredients = parseIngredientsText(formData.ingredientsText);
-                          const instructions = parseInstructionsText(formData.instructionsText);
+                        if (!isValid) {
+                          console.log("Form validation failed, not submitting");
+                          toast({
+                            title: "Validation Error",
+                            description: "Please fix the form errors before saving.",
+                            variant: "destructive"
+                          });
+                          return;
+                        }
 
-                          const mealData = {
-                            name: formData.name,
-                            description: formData.description,
-                            cookTime: formData.cookTime,
-                            difficulty: formData.difficulty,
-                            servings: formData.servings,
-                            image: formData.image,
-                            ingredients,
-                            instructions,
-                          };
+                        // Get form data
+                        const formData = form.getValues();
+                        console.log("Form data:", formData);
+                        
+                        // Parse and prepare data
+                        const ingredients = parseIngredientsText(formData.ingredientsText);
+                        const instructions = parseInstructionsText(formData.instructionsText);
+                        console.log("Parsed ingredients:", ingredients);
+                        console.log("Parsed instructions:", instructions);
 
-                          try {
-                            if (editingMeal) {
-                              console.log("Updating meal with ID:", editingMeal.id);
-                              await updateMealMutation.mutateAsync({ id: editingMeal.id, ...mealData });
-                            } else {
-                              console.log("Creating new meal");
-                              await createMealMutation.mutateAsync(mealData);
-                            }
-                            // Success - dialog will close via mutation onSuccess handler
-                          } catch (error) {
-                            console.error("Save operation failed:", error);
-                            // Don't close dialog on error so user can retry
-                            return;
+                        const mealData = {
+                          name: formData.name,
+                          description: formData.description,
+                          cookTime: formData.cookTime,
+                          difficulty: formData.difficulty,
+                          servings: formData.servings,
+                          image: formData.image,
+                          ingredients,
+                          instructions,
+                        };
+                        console.log("Final meal data to send:", mealData);
+
+                        try {
+                          let result;
+                          if (editingMeal) {
+                            console.log("Updating existing meal with ID:", editingMeal.id);
+                            console.log("Sending PUT request to:", `/api/meals/${editingMeal.id}`);
+                            result = await updateMealMutation.mutateAsync({ id: editingMeal.id, ...mealData });
+                            console.log("Update result:", result);
+                          } else {
+                            console.log("Creating new meal");
+                            console.log("Sending POST request to: /api/meals");
+                            result = await createMealMutation.mutateAsync(mealData);
+                            console.log("Create result:", result);
                           }
-                        } else {
-                          console.log("Form has validation errors:", form.formState.errors);
-                          // Don't close dialog if validation fails
+                          
+                          console.log("✅ API call successful, result:", result);
+                          // Success - mutations have onSuccess handlers that will close dialog
+                          
+                        } catch (error) {
+                          console.error("❌ Save operation failed:", error);
+                          console.error("Error details:", {
+                            message: error?.message,
+                            status: error?.status,
+                            response: error?.response
+                          });
+                          
+                          toast({
+                            title: "Save Failed",
+                            description: `Failed to ${editingMeal ? 'update' : 'create'} meal: ${error?.message || 'Unknown error'}`,
+                            variant: "destructive"
+                          });
+                          
+                          // Don't close dialog on error so user can retry
+                          return;
                         }
                       }}
                       disabled={createMealMutation.isPending || updateMealMutation.isPending}
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      {editingMeal ? "Save Changes" : "Save Meal"}
+                      {createMealMutation.isPending || updateMealMutation.isPending 
+                        ? "Saving..." 
+                        : editingMeal ? "Save Changes" : "Save Meal"}
                     </Button>
                   </div>
                 </form>
