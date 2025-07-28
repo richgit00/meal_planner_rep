@@ -76,8 +76,7 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal created successfully!" });
-      // Ensure dialog is closed
-      setShowMealDialog(false);
+      handleCloseDialog();
     },
     onError: (error: any) => {
       console.error("Create meal error:", error);
@@ -93,8 +92,7 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
-      // Ensure dialog is closed
-      setShowMealDialog(false);
+      handleCloseDialog();
     },
     onError: (error: any) => {
       console.error("Update meal error:", error);
@@ -188,9 +186,6 @@ export default function Admin() {
       console.log("Creating new meal");
       createMealMutation.mutate(mealData);
     }
-    
-    // Close dialog immediately after mutation is triggered
-    handleCloseDialog();
   };
 
   const handleEdit = (meal: Meal) => {
