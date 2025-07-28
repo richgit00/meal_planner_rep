@@ -7,7 +7,7 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { name: "Home", path: "/home" },
+    { name: "Home", path: "/" },
     { name: "Meal Plan", path: "/meal-plan" },
     { name: "Shopping List", path: "/shopping-list" },
     { name: "Pantry", path: "/pantry" },
@@ -19,7 +19,7 @@ export function Header() {
       <div className="container mx-auto px-3 sm:px-4">
         <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <Link href="/home" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2">
             <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-base sm:text-lg">M</span>
             </div>
