@@ -437,21 +437,50 @@ export default function Admin() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
-          <p className="text-slate-600 mt-1">Add a new meal and edit or delete existing meals</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="mb-6 sm:mb-8">
+        {/* Header Text */}
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Meal Administration</h2>
+          <p className="text-sm sm:text-base text-slate-600 mt-1">Manage your meal collection</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={downloadCSVTemplate} variant="outline">
+        
+        {/* Action Buttons */}
+        <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-2">
+          {/* Primary Action - Add Meal */}
+          <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
+            <DialogTrigger asChild>
+              <Button 
+                onClick={() => { setEditingMeal(null); form.reset(); }}
+                className="w-full sm:w-auto"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Meal
+              </Button>
+            </DialogTrigger></div>
+        
+        {/* Secondary Actions - Mobile: Stack, Desktop: Row */}
+        <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 mt-3 sm:mt-2">
+          <Button 
+            onClick={downloadCSVTemplate} 
+            variant="outline"
+            className="w-full sm:w-auto text-sm"
+          >
             <Download className="h-4 w-4 mr-2" />
-            Download CSV Template
+            <span className="hidden sm:inline">Download CSV Template</span>
+            <span className="sm:hidden">Download Template</span>
           </Button>
-          <Button onClick={handleCSVImport} variant="outline">
+          
+          <Button 
+            onClick={handleCSVImport} 
+            variant="outline"
+            className="w-full sm:w-auto text-sm"
+          >
             <FileUp className="h-4 w-4 mr-2" />
-            Import CSV
+            <span className="hidden sm:inline">Import CSV</span>
+            <span className="sm:hidden">Import CSV</span>
           </Button>
+          
           <input
             ref={csvFileInputRef}
             type="file"
@@ -459,22 +488,19 @@ export default function Admin() {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
+          
           <Button 
             onClick={() => cleanupPantryMutation.mutate()} 
             variant="outline" 
-            className="flex items-center space-x-2 text-orange-600 border-orange-600 hover:bg-orange-50"
+            className="w-full sm:w-auto text-sm text-orange-600 border-orange-600 hover:bg-orange-50"
             disabled={cleanupPantryMutation.isPending}
           >
-            <span>🧹</span>
-            <span>Clean Pantry</span>
+            <span className="mr-2">🧹</span>
+            <span className="hidden sm:inline">Clean Pantry</span>
+            <span className="sm:hidden">Clean Pantry</span>
           </Button>
-          <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
-            <DialogTrigger asChild>
-              <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Meal
-              </Button>
-            </DialogTrigger>
+        </div>
+      </div>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
