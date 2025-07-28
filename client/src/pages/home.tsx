@@ -1,3 +1,15 @@
+export default function Home() {
+  return (
+    <div style={{ padding: "2rem", color: "green" }}>
+      <h1>✅ Home page is working!</h1>
+    </div>
+  );
+}
+
+
+
+
+/*
 import { useQuery } from "@tanstack/react-query";
 import { CalendarDays, CheckCircle, ShoppingCart, Package } from "lucide-react";
 import { Link } from "wouter";
@@ -12,7 +24,7 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
-        {/* Meal Plan Card */}
+//        {/* Meal Plan Card /}
         <Link href="/meal-plan">
           <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary active:scale-95 transition-transform">
             <CardContent className="p-4 sm:p-6">
@@ -27,7 +39,7 @@ export default function Home() {
           </Card>
         </Link>
 
-        {/* Shopping List Card */}
+ //       {/* Shopping List Card /}
         <Link href="/shopping-list">
           <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary active:scale-95 transition-transform">
             <CardContent className="p-4 sm:p-6">
@@ -42,7 +54,7 @@ export default function Home() {
           </Card>
         </Link>
 
-        {/* Pantry Card */}
+//        {/* Pantry Card /}
         <Link href="/pantry">
           <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary active:scale-95 transition-transform">
             <CardContent className="p-4 sm:p-6">
@@ -57,7 +69,7 @@ export default function Home() {
           </Card>
         </Link>
 
-        {/* Admin Card */}
+//        {/* Admin Card /}
         <Link href="/admin">
           <Card className="cursor-pointer hover:shadow-md transition-shadow duration-200 hover:border-primary active:scale-95 transition-transform">
             <CardContent className="p-4 sm:p-6">
@@ -75,3 +87,4 @@ export default function Home() {
     </div>
   );
 }
+*/
