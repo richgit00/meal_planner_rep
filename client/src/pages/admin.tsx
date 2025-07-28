@@ -392,14 +392,40 @@ export default function Admin() {
                           // Only submit if validation passes
                           console.log("Form is valid, submitting...");
                           const formData = form.getValues();
-                          onSubmit(formData);
+                          
+                          // Parse and prepare data
+                          const ingredients = parseIngredientsText(formData.ingredientsText);
+                          const instructions = parseInstructionsText(formData.instructionsText);
+
+                          const mealData = {
+                            name: formData.name,
+                            description: formData.description,
+                            cookTime: formData.cookTime,
+                            difficulty: formData.difficulty,
+                            servings: formData.servings,
+                            image: formData.image,
+                            ingredients,
+                            instructions,
+                          };
+
+                          try {
+                            if (editingMeal) {
+                              console.log("Updating meal with ID:", editingMeal.id);
+                              await updateMealMutation.mutateAsync({ id: editingMeal.id, ...mealData });
+                            } else {
+                              console.log("Creating new meal");
+                              await createMealMutation.mutateAsync(mealData);
+                            }
+                            // Success - dialog will close via mutation onSuccess handler
+                          } catch (error) {
+                            console.error("Save operation failed:", error);
+                            // Don't close dialog on error so user can retry
+                            return;
+                          }
                         } else {
                           console.log("Form has validation errors:", form.formState.errors);
+                          // Don't close dialog if validation fails
                         }
-
-                        // Always close dialog regardless of validation
-                        console.log("Closing dialog");
-                        setShowMealDialog(false);
                       }}
                       disabled={createMealMutation.isPending || updateMealMutation.isPending}
                     >
