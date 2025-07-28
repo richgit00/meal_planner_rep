@@ -197,10 +197,7 @@ export default function Pantry() {
     return acc;
   }, {} as Record<string, PantryItem[]>);
 
-  const statusCounts = requiredPantryItems.reduce((acc, item) => {
-    acc[item.status] = (acc[item.status] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  
 
   if (pantryLoading || mealsLoading) {
     return (
