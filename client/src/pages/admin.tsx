@@ -71,7 +71,6 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal created successfully!" });
-      handleCloseDialog();
     },
     onError: (error: any) => {
       console.error("Create meal error:", error);
@@ -87,7 +86,6 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
-      handleCloseDialog();
     },
     onError: (error: any) => {
       console.error("Update meal error:", error);
@@ -170,6 +168,9 @@ export default function Admin() {
       ingredients,
       instructions,
     };
+
+    // Close dialog immediately
+    handleCloseDialog();
 
     console.log("Submitting meal data:", mealData);
     if (editingMeal) {
