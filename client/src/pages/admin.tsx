@@ -152,7 +152,7 @@ export default function Admin() {
     return instructions.join('\n');
   };
 
-  const onSubmit = (data: MealFormData) => {
+  const onSubmit = async (data: MealFormData) => {
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
 
@@ -167,10 +167,16 @@ export default function Admin() {
       instructions,
     };
 
-    if (editingMeal) {
-      updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
-    } else {
-      createMealMutation.mutate(mealData);
+    try {
+      if (editingMeal) {
+        await updateMealMutation.mutateAsync({ id: editingMeal.id, ...mealData });
+      } else {
+        await createMealMutation.mutateAsync(mealData);
+      }
+      // Success handled in mutation onSuccess callbacks
+    } catch (error) {
+      // Error handled in mutation onError callbacks
+      console.error("Mutation failed:", error);
     }
   };
 
@@ -221,8 +227,6 @@ export default function Admin() {
           <Dialog open={showMealDialog} onOpenChange={(open) => {
             if (!open) {
               handleCloseDialog();
-            } else {
-              setShowMealDialog(true);
             }
           }}>
             <DialogTrigger asChild>
