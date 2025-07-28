@@ -52,7 +52,7 @@ export default function Admin() {
     console.log("Closing dialog...");
     setShowMealDialog(false);
     setEditingMeal(null);
-    
+
     // Use setTimeout to ensure state updates properly
     setTimeout(() => {
       form.reset({
@@ -162,7 +162,7 @@ export default function Admin() {
 
   const onSubmit = (data: MealFormData) => {
     console.log("Form submitted with data:", data);
-    
+
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
 
@@ -178,7 +178,7 @@ export default function Admin() {
     };
 
     console.log("Submitting meal data:", mealData);
-    
+
     if (editingMeal) {
       console.log("Updating meal with ID:", editingMeal.id);
       updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
@@ -380,17 +380,25 @@ export default function Admin() {
                       Cancel
                     </Button>
                     <Button 
-                      type="button"  
-                      onClick={() => {
+                      type="button"
+                      onClick={async () => {
                         console.log("Save button clicked");
-                        console.log("Form state:", form.getValues());
-                        console.log("Form errors:", form.formState.errors);
-                        
-                        // Trigger form submission
-                        form.handleSubmit(onSubmit)();
-                        
-                        // Force close dialog regardless of validation
-                        console.log("Forcing dialog close");
+
+                        // Validate form first
+                        const isValid = await form.trigger();
+                        console.log("Form validation result:", isValid);
+
+                        if (isValid) {
+                          // Only submit if validation passes
+                          console.log("Form is valid, submitting...");
+                          const formData = form.getValues();
+                          onSubmit(formData);
+                        } else {
+                          console.log("Form has validation errors:", form.formState.errors);
+                        }
+
+                        // Always close dialog regardless of validation
+                        console.log("Closing dialog");
                         setShowMealDialog(false);
                       }}
                       disabled={createMealMutation.isPending || updateMealMutation.isPending}
