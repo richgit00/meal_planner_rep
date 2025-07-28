@@ -230,7 +230,10 @@ export default function Admin() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
+          <p className="text-slate-600 mt-1">Add a new meal and edit or delete existing meals</p>
+        </div>
         <div className="flex space-x-4">
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>

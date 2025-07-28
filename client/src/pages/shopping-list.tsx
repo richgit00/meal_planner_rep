@@ -321,15 +321,8 @@ export default function ShoppingList() {
 
       {/* Shopping Summary */}
       <div className="mt-8 bg-slate-100 rounded-xl p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800">Shopping Summary</h3>
-            <p className="text-slate-600">Generated from your weekly meal plan</p>
-          </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">{shoppingList.summary.totalItems} items</div>
-            <div className="text-sm text-slate-600">Generated from your weekly meal plan</div>
-          </div>
+        <div className="flex justify-center items-center">
+          <div className="text-2xl font-bold text-primary">{shoppingList.summary.totalItems} items</div>
         </div>
       </div>
     </div>
