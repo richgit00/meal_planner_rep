@@ -55,23 +55,18 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal created successfully!" });
-      
-      // Close dialog immediately
       setShowMealDialog(false);
-      
-      // Reset form with a slight delay
-      setTimeout(() => {
-        form.reset({
-          name: "",
-          description: "",
-          cookTime: "",
-          difficulty: "Easy",
-          servings: 4,
-          image: "",
-          ingredientsText: "",
-          instructionsText: "",
-        });
-      }, 100);
+      setEditingMeal(null);
+      form.reset({
+        name: "",
+        description: "",
+        cookTime: "",
+        difficulty: "Easy",
+        servings: 4,
+        image: "",
+        ingredientsText: "",
+        instructionsText: "",
+      });
     },
     onError: () => {
       toast({ title: "Failed to create meal", variant: "destructive" });
@@ -89,24 +84,18 @@ export default function Admin() {
       console.log("Meal update successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
-      
-      // Close dialog and reset state immediately
       setEditingMeal(null);
       setShowMealDialog(false);
-      
-      // Reset form with a slight delay to ensure dialog state is updated
-      setTimeout(() => {
-        form.reset({
-          name: "",
-          description: "",
-          cookTime: "",
-          difficulty: "Easy",
-          servings: 4,
-          image: "",
-          ingredientsText: "",
-          instructionsText: "",
-        });
-      }, 100);
+      form.reset({
+        name: "",
+        description: "",
+        cookTime: "",
+        difficulty: "Easy",
+        servings: 4,
+        image: "",
+        ingredientsText: "",
+        instructionsText: "",
+      });
     },
     onError: (error: any) => {
       console.error("Meal update failed:", error);
