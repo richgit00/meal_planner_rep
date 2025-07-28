@@ -84,18 +84,22 @@ export default function Admin() {
       console.log("Meal update successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
-      setEditingMeal(null);
-      setShowMealDialog(false);
-      form.reset({
-        name: "",
-        description: "",
-        cookTime: "",
-        difficulty: "Easy",
-        servings: 4,
-        image: "",
-        ingredientsText: "",
-        instructionsText: "",
-      });
+      
+      // Force close dialog and reset state
+      setTimeout(() => {
+        setShowMealDialog(false);
+        setEditingMeal(null);
+        form.reset({
+          name: "",
+          description: "",
+          cookTime: "",
+          difficulty: "Easy",
+          servings: 4,
+          image: "",
+          ingredientsText: "",
+          instructionsText: "",
+        });
+      }, 0);
     },
     onError: (error: any) => {
       console.error("Meal update failed:", error);
