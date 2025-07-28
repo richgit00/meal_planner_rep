@@ -94,14 +94,6 @@ app.use((req, res, next) => {
     await setupVite(app, server);
   } else {
     serveStatic(app);
-  }
-
-  // Serve static files from client dist
-  app.use(express.static(path.join(__dirname, "../client/dist")));
-
-  // Catch-all handler: send back React's index.html file for any non-API routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-  });
+  };
 
 })();
