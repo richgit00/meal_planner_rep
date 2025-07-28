@@ -457,7 +457,9 @@ export default function Admin() {
                 <Plus className="h-4 w-4 mr-2" />
                 Add New Meal
               </Button>
-            </DialogTrigger></div>
+            </DialogTrigger>
+          </Dialog>
+        </div>
         
         {/* Secondary Actions - Mobile: Stack, Desktop: Row */}
         <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 mt-3 sm:mt-2">
