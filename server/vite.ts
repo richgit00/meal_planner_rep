@@ -79,7 +79,7 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html for non-API routes only
-  app.get("*", (req, res) => {
+  app.use("*", (req, res) => {
     // Don't serve index.html for API routes
     if (req.path.startsWith('/api')) {
       return res.status(404).json({ message: 'Not found' });
