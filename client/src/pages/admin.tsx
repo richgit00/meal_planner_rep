@@ -56,7 +56,16 @@ export default function Admin() {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal created successfully!" });
       setShowMealDialog(false);
-      form.reset();
+      form.reset({
+        name: "",
+        description: "",
+        cookTime: "",
+        difficulty: "Easy",
+        servings: 4,
+        image: "",
+        ingredientsText: "",
+        instructionsText: "",
+      });
     },
     onError: () => {
       toast({ title: "Failed to create meal", variant: "destructive" });
@@ -76,7 +85,16 @@ export default function Admin() {
       toast({ title: "Meal updated successfully!" });
       setShowMealDialog(false);
       setEditingMeal(null);
-      form.reset();
+      form.reset({
+        name: "",
+        description: "",
+        cookTime: "",
+        difficulty: "Easy",
+        servings: 4,
+        image: "",
+        ingredientsText: "",
+        instructionsText: "",
+      });
     },
     onError: (error: any) => {
       console.error("Meal update failed:", error);
@@ -280,10 +298,10 @@ export default function Admin() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Difficulty</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue placeholder="Select difficulty" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
