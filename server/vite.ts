@@ -68,22 +68,27 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "..", "dist", "public");
+  const distPath = path.resolve("dist/public");
 
   if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
-    );
+    throw new Error(`Could not find the build folder at ${distPath}. Please run 'npm run build' first.`);
   }
 
+  // Serve static files
   app.use(express.static(distPath));
 
-  // fall through to index.html for non-API routes only
-  app.use("*", (req, res) => {
-    // Don't serve index.html for API routes
-    if (req.path.startsWith('/api')) {
-      return res.status(404).json({ message: 'Not found' });
+  // Handle client-side routing - serve index.html for non-API routes
+  app.get("*", (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return next();
     }
-    res.sendFile(path.resolve(distPath, "index.html"));
+
+    const indexPath = path.join(distPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send("index.html not found");
+    }
   });
 }
