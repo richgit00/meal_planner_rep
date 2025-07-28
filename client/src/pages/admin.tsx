@@ -84,22 +84,18 @@ export default function Admin() {
       console.log("Meal update successful:", data);
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
-      
-      // Force close dialog and reset state
-      setTimeout(() => {
-        setShowMealDialog(false);
-        setEditingMeal(null);
-        form.reset({
-          name: "",
-          description: "",
-          cookTime: "",
-          difficulty: "Easy",
-          servings: 4,
-          image: "",
-          ingredientsText: "",
-          instructionsText: "",
-        });
-      }, 0);
+      setShowMealDialog(false);
+      setEditingMeal(null);
+      form.reset({
+        name: "",
+        description: "",
+        cookTime: "",
+        difficulty: "Easy",
+        servings: 4,
+        image: "",
+        ingredientsText: "",
+        instructionsText: "",
+      });
     },
     onError: (error: any) => {
       console.error("Meal update failed:", error);
@@ -240,23 +236,7 @@ export default function Admin() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex space-x-4">
-          <Dialog open={showMealDialog} onOpenChange={(open) => {
-            setShowMealDialog(open);
-            if (!open) {
-              // Reset all state when dialog closes
-              setEditingMeal(null);
-              form.reset({
-                name: "",
-                description: "",
-                cookTime: "",
-                difficulty: "Easy",
-                servings: 4,
-                image: "",
-                ingredientsText: "",
-                instructionsText: "",
-              });
-            }
-          }}>
+          <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
                 <Plus className="h-4 w-4 mr-2" />
