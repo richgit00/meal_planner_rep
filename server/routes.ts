@@ -212,42 +212,90 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.post("/api/pantry-items/cleanup", async (req, res) => {
     try {
-      console.log("🧹 Starting pantry cleanup...");
+      console.log("🧹 Starting comprehensive pantry cleanup...");
       
       // Get all meals and their ingredients
       const allMeals = await db.select().from(meals);
+      console.log(`📊 Analyzing ${allMeals.length} meals for pantry ingredients...`);
       
-      // Extract all pantry ingredients from meals
+      // Extract all pantry ingredients from meals with better normalization
       const usedPantryIngredients = new Set<string>();
       
       allMeals.forEach(meal => {
         if (meal.ingredients && Array.isArray(meal.ingredients)) {
           meal.ingredients.forEach(ingredient => {
             if (ingredient.category === 'pantry' && ingredient.name) {
-              const normalizedName = ingredient.name.toLowerCase().trim();
-              usedPantryIngredients.add(normalizedName);
+              // More thorough normalization
+              let normalizedName = ingredient.name.toLowerCase().trim()
+                .replace(/\s+/g, ' ')  // normalize spaces
+                .replace(/[.,]/g, '')  // remove punctuation
+                .replace(/\bground\b/g, '')  // remove common modifiers
+                .replace(/\bfresh\b/g, '')
+                .replace(/\bdried\b/g, '')
+                .replace(/\bwhole\b/g, '')
+                .trim();
+              
+              if (normalizedName) {
+                usedPantryIngredients.add(normalizedName);
+                console.log(`🥫 Found pantry ingredient: ${ingredient.name} -> ${normalizedName}`);
+              }
             }
           });
         }
       });
       
+      console.log(`📋 Total unique pantry ingredients found: ${usedPantryIngredients.size}`);
+      
       // Get current pantry items
       const currentPantryItems = await db.select().from(pantryItems);
+      console.log(`📦 Current pantry items in database: ${currentPantryItems.length}`);
       
-      // Find which pantry items are actually used
+      // Find which pantry items are actually used with improved matching
       const usedPantryItems = currentPantryItems.filter(item => {
-        const itemNameLower = item.name.toLowerCase().trim();
-        return Array.from(usedPantryIngredients).some(ingredient => 
-          ingredient.includes(itemNameLower) || 
-          itemNameLower.includes(ingredient) ||
-          ingredient === itemNameLower
-        );
+        const itemNameLower = item.name.toLowerCase().trim()
+          .replace(/\s+/g, ' ')
+          .replace(/[.,]/g, '')
+          .replace(/\bground\b/g, '')
+          .replace(/\bfresh\b/g, '')
+          .replace(/\bdried\b/g, '')
+          .replace(/\bwhole\b/g, '')
+          .trim();
+        
+        const isUsed = Array.from(usedPantryIngredients).some(ingredient => {
+          // Exact match
+          if (ingredient === itemNameLower) return true;
+          
+          // Partial matches (ingredient contains item name or vice versa)
+          if (ingredient.includes(itemNameLower) && itemNameLower.length > 2) return true;
+          if (itemNameLower.includes(ingredient) && ingredient.length > 2) return true;
+          
+          // Word-based matching for compound ingredients
+          const ingredientWords = ingredient.split(' ');
+          const itemWords = itemNameLower.split(' ');
+          
+          return ingredientWords.some(iWord => 
+            itemWords.some(pWord => 
+              (iWord === pWord && iWord.length > 2) ||
+              (iWord.includes(pWord) && pWord.length > 2) ||
+              (pWord.includes(iWord) && iWord.length > 2)
+            )
+          );
+        });
+        
+        if (isUsed) {
+          console.log(`✅ Keeping: ${item.name} (matches meal ingredients)`);
+        }
+        
+        return isUsed;
       });
       
       // Find items to remove
       const itemsToRemove = currentPantryItems.filter(item => 
         !usedPantryItems.some(usedItem => usedItem.id === item.id)
       );
+      
+      console.log(`🗑️ Items to remove: ${itemsToRemove.length}`);
+      itemsToRemove.forEach(item => console.log(`  - ${item.name} (${item.category})`));
       
       // Remove unused pantry items
       let removedCount = 0;
@@ -259,11 +307,14 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       }
       
+      console.log(`✅ Pantry cleanup completed: removed ${removedCount} items, ${usedPantryItems.length} remaining`);
+      
       res.json({
-        message: `Pantry cleanup completed`,
+        message: `Pantry cleanup completed successfully`,
         removedItems: removedCount,
         remainingItems: usedPantryItems.length,
-        removedItemNames: itemsToRemove.map(item => item.name)
+        removedItemNames: itemsToRemove.map(item => item.name),
+        keptItems: usedPantryItems.map(item => item.name)
       });
       
     } catch (error) {
