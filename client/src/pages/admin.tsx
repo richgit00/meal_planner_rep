@@ -66,7 +66,9 @@ export default function Admin() {
   const updateMealMutation = useMutation({
     mutationFn: async ({ id, ...mealData }: { id: string } & Partial<InsertMeal>) => {
       console.log("Updating meal with ID:", id, "Data:", mealData);
-      return await apiRequest("PUT", `/api/meals/${id}`, mealData);
+      const response = await apiRequest("PUT", `/api/meals/${id}`, mealData);
+      console.log("Update response:", response);
+      return response;
     },
     onSuccess: (data) => {
       console.log("Meal update successful:", data);
@@ -76,22 +78,32 @@ export default function Admin() {
       setEditingMeal(null);
       form.reset();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Meal update failed:", error);
-      toast({ title: "Failed to update meal", variant: "destructive" });
+      toast({ 
+        title: "Failed to update meal", 
+        description: error?.message || "Please try again",
+        variant: "destructive" 
+      });
     },
   });
 
   const deleteMealMutation = useMutation({
     mutationFn: async (id: string) => {
+      console.log("Deleting meal with ID:", id);
       return await apiRequest("DELETE", `/api/meals/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal deleted successfully!" });
     },
-    onError: () => {
-      toast({ title: "Failed to delete meal", variant: "destructive" });
+    onError: (error: any) => {
+      console.error("Delete meal failed:", error);
+      toast({ 
+        title: "Failed to delete meal", 
+        description: error?.message || "Please try again",
+        variant: "destructive" 
+      });
     },
   });
 
@@ -382,7 +394,11 @@ export default function Admin() {
                   <Button 
                     size="sm" 
                     variant="destructive" 
-                    onClick={() => deleteMealMutation.mutate(meal.id)}
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to delete "${meal.name}"? This action cannot be undone.`)) {
+                        deleteMealMutation.mutate(meal.id);
+                      }
+                    }}
                     disabled={deleteMealMutation.isPending}
                   >
                     <Trash2 className="h-4 w-4" />

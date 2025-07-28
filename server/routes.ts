@@ -45,40 +45,57 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.log(`🔄 PUT /api/meals/${req.params.id} called`);
       console.log(`📤 Request body:`, req.body);
       
+      // Validate the incoming data
       const validated = insertMealSchema.partial().parse(req.body);
       console.log(`✅ Validated data:`, validated);
       
-      const [meal] = await db.update(meals)
-        .set(validated)
-        .where(eq(meals.id, req.params.id))
-        .returning();
-        
-      console.log(`📊 Database update result:`, meal);
-      
-      if (!meal) {
+      // First check if meal exists
+      const existingMeal = await db.select().from(meals).where(eq(meals.id, req.params.id));
+      if (existingMeal.length === 0) {
         console.log(`❌ Meal not found with ID: ${req.params.id}`);
         return res.status(404).json({ message: "Meal not found" });
       }
       
-      console.log(`✅ Successfully updated meal:`, meal);
-      res.json(meal);
+      // Update the meal
+      const [updatedMeal] = await db.update(meals)
+        .set(validated)
+        .where(eq(meals.id, req.params.id))
+        .returning();
+        
+      console.log(`📊 Database update result:`, updatedMeal);
+      console.log(`✅ Successfully updated meal:`, updatedMeal);
+      res.json(updatedMeal);
     } catch (error) {
       console.error(`❌ Error updating meal:`, error);
-      res.status(400).json({ message: "Invalid meal data", error: error.message });
+      if (error.name === 'ZodError') {
+        res.status(400).json({ message: "Invalid meal data format", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update meal", error: error.message });
+      }
     }
   });
 
   app.delete("/api/meals/:id", async (req, res) => {
     try {
+      console.log(`🗑️ DELETE /api/meals/${req.params.id} called`);
+      
+      // First check if meal exists
+      const existingMeal = await db.select().from(meals).where(eq(meals.id, req.params.id));
+      if (existingMeal.length === 0) {
+        console.log(`❌ Meal not found with ID: ${req.params.id}`);
+        return res.status(404).json({ message: "Meal not found" });
+      }
+      
+      // Delete the meal
       const [deleted] = await db.delete(meals)
         .where(eq(meals.id, req.params.id))
         .returning();
-      if (!deleted) {
-        return res.status(404).json({ message: "Meal not found" });
-      }
+        
+      console.log(`✅ Successfully deleted meal:`, deleted);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete meal" });
+      console.error(`❌ Error deleting meal:`, error);
+      res.status(500).json({ message: "Failed to delete meal", error: error.message });
     }
   });
 
