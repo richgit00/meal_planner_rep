@@ -1,4 +1,3 @@
-
 import { db } from './db';          // your Drizzle db instance
 import { meals } from '@shared/schema';  // your meals table schema
 
@@ -20,6 +19,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedDatabase } from "./seed";
+import path from "path";
 
 const app = express();
 app.use(express.json());
@@ -91,5 +91,13 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Serve static files from client dist
+  app.use(express.static(path.join(__dirname, "../client/dist")));
+
+  // Catch-all handler: send back React's index.html file for any non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+  });
 
 })();
