@@ -1,4 +1,5 @@
-import { Switch, Route, Redirect } from "wouter";
+import { Router, Switch, Route } from "wouter";
+//import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -24,7 +25,33 @@ function Router() {
   );
 }
 
+
 function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Router base="/">
+          <div className="min-h-screen bg-slate-50">
+            <Header />
+            <main>
+              <Switch>
+                <Route path="/" component={Home} />
+                <Route path="/meal-plan" component={MealPlan} />
+                ...
+              </Switch>
+            </main>
+          </div>
+        </Router>
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+
+
+
+
+/*function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -38,6 +65,6 @@ function App() {
       </TooltipProvider>
     </QueryClientProvider>
   );
-}
+}*/
 
 export default App;
