@@ -48,6 +48,21 @@ export default function Admin() {
     },
   });
 
+  const handleCloseDialog = () => {
+    setShowMealDialog(false);
+    setEditingMeal(null);
+    form.reset({
+      name: "",
+      description: "",
+      cookTime: "",
+      difficulty: "Easy",
+      servings: 4,
+      image: "",
+      ingredientsText: "",
+      instructionsText: "",
+    });
+  };
+
   const createMealMutation = useMutation({
     mutationFn: async (mealData: InsertMeal) => {
       return await apiRequest("POST", "/api/meals", mealData);
@@ -55,18 +70,7 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal created successfully!" });
-      setShowMealDialog(false);
-      setEditingMeal(null);
-      form.reset({
-        name: "",
-        description: "",
-        cookTime: "",
-        difficulty: "Easy",
-        servings: 4,
-        image: "",
-        ingredientsText: "",
-        instructionsText: "",
-      });
+      handleCloseDialog();
     },
     onError: () => {
       toast({ title: "Failed to create meal", variant: "destructive" });
@@ -75,30 +79,15 @@ export default function Admin() {
 
   const updateMealMutation = useMutation({
     mutationFn: async ({ id, ...mealData }: { id: string } & Partial<InsertMeal>) => {
-      console.log("Updating meal with ID:", id, "Data:", mealData);
       const response = await apiRequest("PUT", `/api/meals/${id}`, mealData);
-      console.log("Update response:", response);
       return response;
     },
-    onSuccess: (data) => {
-      console.log("Meal update successful:", data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
       toast({ title: "Meal updated successfully!" });
-      setShowMealDialog(false);
-      setEditingMeal(null);
-      form.reset({
-        name: "",
-        description: "",
-        cookTime: "",
-        difficulty: "Easy",
-        servings: 4,
-        image: "",
-        ingredientsText: "",
-        instructionsText: "",
-      });
+      handleCloseDialog();
     },
     onError: (error: any) => {
-      console.error("Meal update failed:", error);
       toast({ 
         title: "Failed to update meal", 
         description: error?.message || "Please try again",
@@ -163,10 +152,7 @@ export default function Admin() {
     return instructions.join('\n');
   };
 
-  const onSubmit = (data: MealFormData) => {
-    console.log("Form submitted with data:", data);
-    console.log("Editing meal:", editingMeal);
-    
+  const onSubmit = async (data: MealFormData) => {
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
 
@@ -181,13 +167,9 @@ export default function Admin() {
       instructions,
     };
 
-    console.log("Processed meal data:", mealData);
-
     if (editingMeal) {
-      console.log("Calling update mutation for meal ID:", editingMeal.id);
       updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
     } else {
-      console.log("Calling create mutation");
       createMealMutation.mutate(mealData);
     }
   };
@@ -380,10 +362,7 @@ export default function Admin() {
                   />
 
                   <div className="flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={() => {
-                      setShowMealDialog(false);
-                      setEditingMeal(null);
-                    }}>
+                    <Button type="button" variant="outline" onClick={handleCloseDialog}>
                       Cancel
                     </Button>
                     <Button type="submit" disabled={createMealMutation.isPending || updateMealMutation.isPending}>
