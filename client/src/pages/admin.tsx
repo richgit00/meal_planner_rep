@@ -152,7 +152,7 @@ export default function Admin() {
     return instructions.join('\n');
   };
 
-  const onSubmit = async (data: MealFormData) => {
+  const onSubmit = (data: MealFormData) => {
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
 
@@ -218,7 +218,13 @@ export default function Admin() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex space-x-4">
-          <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
+          <Dialog open={showMealDialog} onOpenChange={(open) => {
+            if (!open) {
+              handleCloseDialog();
+            } else {
+              setShowMealDialog(true);
+            }
+          }}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
                 <Plus className="h-4 w-4 mr-2" />
