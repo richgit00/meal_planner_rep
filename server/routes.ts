@@ -102,30 +102,48 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Bulk import meals
   app.post("/api/meals/bulk-import", async (req, res) => {
     try {
-      const { meals: mealsToImport } = req.body;
-      if (!Array.isArray(mealsToImport)) {
-        return res.status(400).json({ message: "Expected array of meals" });
+      let mealsToImport;
+      
+      // Handle both direct array and wrapped object formats
+      if (Array.isArray(req.body)) {
+        mealsToImport = req.body;
+      } else if (req.body.meals && Array.isArray(req.body.meals)) {
+        mealsToImport = req.body.meals;
+      } else {
+        return res.status(400).json({ message: "Expected array of meals or object with meals property" });
       }
 
       const createdMeals = [];
-      for (const mealData of mealsToImport) {
+      const errors = [];
+      
+      for (let i = 0; i < mealsToImport.length; i++) {
+        const mealData = mealsToImport[i];
         try {
+          console.log(`Processing meal ${i + 1}:`, mealData);
           const validated = insertMealSchema.parse(mealData);
           const mealWithId = { ...validated, id: randomUUID() };
           const [meal] = await db.insert(meals).values(mealWithId).returning();
           createdMeals.push(meal);
+          console.log(`✅ Successfully imported meal: ${meal.name}`);
         } catch (error) {
-          console.error("Failed to import meal:", mealData, error);
+          console.error(`❌ Failed to import meal ${i + 1}:`, mealData, error);
+          errors.push({
+            index: i + 1,
+            meal: mealData.name || `Row ${i + 1}`,
+            error: error.message
+          });
         }
       }
 
       res.json({ 
-        message: `Successfully imported ${createdMeals.length} meals`,
+        message: `Successfully imported ${createdMeals.length} out of ${mealsToImport.length} meals`,
         imported: createdMeals.length,
-        total: mealsToImport.length
+        total: mealsToImport.length,
+        errors: errors.length > 0 ? errors : undefined
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to import meals" });
+      console.error("Bulk import error:", error);
+      res.status(500).json({ message: "Failed to import meals", error: error.message });
     }
   });
 

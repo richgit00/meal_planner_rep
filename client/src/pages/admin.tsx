@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Edit, Trash2, Upload, Save } from "lucide-react";
+import { Plus, Edit, Trash2, Upload, Save, Download, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -29,6 +29,7 @@ export default function Admin() {
   const [editingMeal, setEditingMeal] = useState<Meal | null>(null);
   const [showMealDialog, setShowMealDialog] = useState(false);
   const [bulkImportText, setBulkImportText] = useState("");
+  const csvFileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: meals = [], isLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -218,6 +219,134 @@ export default function Admin() {
 
   const totalMeals = meals?.length ?? 0;
 
+  const downloadCSVTemplate = () => {
+    const csvContent = [
+      // CSV Header
+      'name,description,cookTime,difficulty,servings,image,ingredients,instructions',
+      // Example row to show format
+      'Example Chicken Parmesan,"Crispy breaded chicken with marinara and cheese","45 mins",Medium,4,"https://images.unsplash.com/photo-1551183053-bf91a1d81141","Chicken breast|2 lbs|fresh;Breadcrumbs|2 cups|pantry;Marinara sauce|2 cups|pantry;Mozzarella cheese|2 cups|fresh","Pound chicken to even thickness;Bread chicken with breadcrumbs;Fry until golden brown;Top with sauce and cheese;Bake at 375°F for 20 minutes"'
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'meal-template.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({ title: "CSV template downloaded successfully!" });
+  };
+
+  const handleCSVImport = () => {
+    csvFileInputRef.current?.click();
+  };
+
+  const processCsvFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const csvText = e.target?.result as string;
+        const lines = csvText.split('\n').filter(line => line.trim());
+        
+        if (lines.length < 2) {
+          toast({ title: "Invalid CSV: No data rows found", variant: "destructive" });
+          return;
+        }
+
+        // Parse CSV (skip header row)
+        const meals = lines.slice(1).map((line, index) => {
+          try {
+            // Simple CSV parsing - handle quoted fields
+            const fields = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              if (char === '"') {
+                inQuotes = !inQuotes;
+              } else if (char === ',' && !inQuotes) {
+                fields.push(current);
+                current = '';
+              } else {
+                current += char;
+              }
+            }
+            fields.push(current); // Add last field
+
+            if (fields.length !== 8) {
+              throw new Error(`Row ${index + 2} has ${fields.length} fields, expected 8`);
+            }
+
+            const [name, description, cookTime, difficulty, servings, image, ingredientsText, instructionsText] = fields;
+
+            // Parse ingredients (format: "item|amount|category;item2|amount2|category2")
+            const ingredients = ingredientsText.split(';').map(ing => {
+              const parts = ing.split('|');
+              return {
+                name: parts[0]?.trim() || '',
+                amount: parts[1]?.trim() || '1 unit',
+                category: (parts[2]?.trim() === 'pantry' ? 'pantry' : 'fresh') as 'fresh' | 'pantry'
+              };
+            }).filter(ing => ing.name);
+
+            // Parse instructions (format: "step1;step2;step3")
+            const instructions = instructionsText.split(';').map(step => step.trim()).filter(step => step);
+
+            return {
+              name: name.trim(),
+              description: description.trim(),
+              cookTime: cookTime.trim(),
+              difficulty: difficulty.trim(),
+              servings: parseInt(servings) || 4,
+              image: image.trim(),
+              ingredients,
+              instructions
+            };
+          } catch (error) {
+            console.error(`Error parsing CSV row ${index + 2}:`, error);
+            throw new Error(`Error parsing row ${index + 2}: ${error.message}`);
+          }
+        });
+
+        // Import the parsed meals
+        bulkImportMutation.mutate(meals);
+        
+      } catch (error) {
+        console.error('CSV parsing error:', error);
+        toast({ 
+          title: "CSV Import Failed", 
+          description: error.message || "Invalid CSV format",
+          variant: "destructive" 
+        });
+      }
+    };
+    
+    reader.onerror = () => {
+      toast({ title: "Failed to read CSV file", variant: "destructive" });
+    };
+    
+    reader.readAsText(file);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        toast({ title: "Please select a CSV file", variant: "destructive" });
+        return;
+      }
+      processCsvFile(file);
+    }
+    // Reset the input
+    if (csvFileInputRef.current) {
+      csvFileInputRef.current.value = '';
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -234,7 +363,22 @@ export default function Admin() {
           <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
           <p className="text-slate-600 mt-1">Add a new meal and edit or delete existing meals</p>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={downloadCSVTemplate} variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Download CSV Template
+          </Button>
+          <Button onClick={handleCSVImport} variant="outline">
+            <FileUp className="h-4 w-4 mr-2" />
+            Import CSV
+          </Button>
+          <input
+            ref={csvFileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
           <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
