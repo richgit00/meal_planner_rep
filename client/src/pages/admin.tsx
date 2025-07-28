@@ -740,6 +740,47 @@ export default function Admin() {
               </Form>
             </DialogContent>
           </Dialog>
+        
+        {/* Secondary Actions - Mobile: Stack, Desktop: Row */}
+        <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 mt-3 sm:mt-2">
+          <Button 
+            onClick={downloadCSVTemplate} 
+            variant="outline"
+            className="w-full sm:w-auto text-sm"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Download CSV Template</span>
+            <span className="sm:hidden">Download Template</span>
+          </Button>
+          
+          <Button 
+            onClick={handleCSVImport} 
+            variant="outline"
+            className="w-full sm:w-auto text-sm"
+          >
+            <FileUp className="h-4 w-4 mr-2" />
+            <span className="hidden sm:inline">Import CSV</span>
+            <span className="sm:hidden">Import CSV</span>
+          </Button>
+          
+          <input
+            ref={csvFileInputRef}
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
+          
+          <Button 
+            onClick={() => cleanupPantryMutation.mutate()} 
+            variant="outline" 
+            className="w-full sm:w-auto text-sm text-orange-600 border-orange-600 hover:bg-orange-50"
+            disabled={cleanupPantryMutation.isPending}
+          >
+            <span className="mr-2">🧹</span>
+            <span className="hidden sm:inline">Clean Pantry</span>
+            <span className="sm:hidden">Clean Pantry</span>
+          </Button>
         </div>
       </div>
 
