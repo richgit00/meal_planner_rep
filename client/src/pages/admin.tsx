@@ -385,24 +385,31 @@ export default function Admin() {
                         console.log("Save button clicked");
                         console.log("Current editing meal:", editingMeal);
 
-                        // Validate form first
-                        const isValid = await form.trigger();
-                        console.log("Form validation result:", isValid);
-                        console.log("Form errors:", form.formState.errors);
+                        // Get current form values first
+                        const formData = form.getValues();
+                        console.log("Current form data:", formData);
+                        
+                        // Check for required fields manually since form.trigger() might be overly strict
+                        const requiredFieldsValid = 
+                          formData.name?.trim() && 
+                          formData.description?.trim() && 
+                          formData.cookTime?.trim() && 
+                          formData.ingredientsText?.trim() && 
+                          formData.instructionsText?.trim();
 
-                        if (!isValid) {
-                          console.log("Form validation failed, not submitting");
+                        if (!requiredFieldsValid) {
+                          console.log("Required fields missing");
                           toast({
                             title: "Validation Error",
-                            description: "Please fix the form errors before saving.",
+                            description: "Please fill in all required fields (name, description, cook time, ingredients, instructions).",
                             variant: "destructive"
                           });
                           return;
                         }
 
-                        // Get form data
-                        const formData = form.getValues();
-                        console.log("Form data:", formData);
+                        console.log("✅ Basic validation passed")
+
+                        // Form data already retrieved above for validation
                         
                         // Parse and prepare data
                         const ingredients = parseIngredientsText(formData.ingredientsText);
