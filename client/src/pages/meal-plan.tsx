@@ -208,18 +208,22 @@ export default function MealPlan() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={goToPreviousWeek} disabled={isPreviousDisabled}>
-            <ChevronLeft className="h-4 w-4 mr-2" />
-            Previous Week
-          </Button>
-          <span className="text-lg font-medium text-slate-800">{formatWeekRange(currentWeek)}</span>
-          <Button variant="outline" onClick={goToNextWeek} disabled={isNextDisabled}>
-            Next Week
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" onClick={goToPreviousWeek} disabled={isPreviousDisabled} size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Previous Week</span>
+              <span className="sm:hidden">Prev</span>
+            </Button>
+            <Button variant="outline" onClick={goToNextWeek} disabled={isNextDisabled} size="sm">
+              <span className="hidden sm:inline">Next Week</span>
+              <span className="sm:hidden">Next</span>
+              <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
+            </Button>
+          </div>
+          <span className="text-sm sm:text-lg font-medium text-slate-800 text-center sm:text-left min-w-0 flex-shrink-0">{formatWeekRange(currentWeek)}</span>
         </div>
       </div>
 

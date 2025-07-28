@@ -178,10 +178,10 @@ export default function ShoppingList() {
   if (!shoppingList) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
           <h2 className="text-2xl font-bold text-slate-800">Shopping List</h2>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-2">
               <Button variant="outline" onClick={goToPreviousWeek} disabled={isPreviousDisabled} size="sm">
                 <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Previous Week</span>
@@ -193,7 +193,7 @@ export default function ShoppingList() {
                 <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
               </Button>
             </div>
-            <span className="text-sm sm:text-lg font-medium text-slate-800 order-first sm:order-none">{formatWeekRange(currentWeek)}</span>
+            <span className="text-sm sm:text-lg font-medium text-slate-800 text-center sm:text-left min-w-0 flex-shrink-0">{formatWeekRange(currentWeek)}</span>
           </div>
         </div>
         <div className="text-center">
