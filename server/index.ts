@@ -82,10 +82,11 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
+  const port = parseInt(process.env.PORT!, 10); // PORT is required by Render
   const server = app.listen(port, '0.0.0.0', () => {
-    log(`serving on port ${port} (accessible on 0.0.0.0)`);
+    log(`✅ Server running on port ${port} (Render-compliant)`);
   });
+
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
