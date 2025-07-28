@@ -247,7 +247,23 @@ export default function Admin() {
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
         <div className="flex space-x-4">
-          <Dialog open={showMealDialog} onOpenChange={setShowMealDialog}>
+          <Dialog open={showMealDialog} onOpenChange={(open) => {
+            setShowMealDialog(open);
+            if (!open) {
+              // Reset all state when dialog closes
+              setEditingMeal(null);
+              form.reset({
+                name: "",
+                description: "",
+                cookTime: "",
+                difficulty: "Easy",
+                servings: 4,
+                image: "",
+                ingredientsText: "",
+                instructionsText: "",
+              });
+            }
+          }}>
             <DialogTrigger asChild>
               <Button onClick={() => { setEditingMeal(null); form.reset(); }}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -391,7 +407,10 @@ export default function Admin() {
                   />
 
                   <div className="flex justify-end space-x-4">
-                    <Button type="button" variant="outline" onClick={() => setShowMealDialog(false)}>
+                    <Button type="button" variant="outline" onClick={() => {
+                      setShowMealDialog(false);
+                      setEditingMeal(null);
+                    }}>
                       Cancel
                     </Button>
                     <Button type="submit" disabled={createMealMutation.isPending || updateMealMutation.isPending}>
