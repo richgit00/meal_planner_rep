@@ -67,6 +67,8 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+
+
 export function serveStatic(app: Express) {
   const distPath = path.resolve(import.meta.dirname, "..", "dist/public");
 
@@ -84,6 +86,43 @@ export function serveStatic(app: Express) {
       return res.status(404).json({ message: 'API route not found' });
     }
 
+    // Add no-cache headers to prevent stale files
+    res.set({
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    });
+
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
+
+
+
+
+
+
+
+/*
+export function serveStatic(app: Express) {
+  const distPath = path.resolve(import.meta.dirname, "..", "dist/public");
+
+  if (!fs.existsSync(distPath)) {
+    throw new Error(`Could not find the build folder at ${distPath}. Please run 'npm run build' first.`);
+  }
+
+
+  // Serve static files
+  app.use(express.static(distPath));
+
+  // Handle client-side routing - serve index.html for all non-API routes
+  app.get("*", (req, res) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ message: 'API route not found' });
+    }
+
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+}
+*/
