@@ -13,13 +13,17 @@ export default function Favourites() {
   const [location, setLocation] = useLocation();
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [favouriteMeals, setFavouriteMeals] = useState<Set<string>>(() => {
-    const stored = localStorage.getItem('favoriteMeals');
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  });
+  const [favouriteMeals, setFavouriteMeals] = useState<Set<string>>(new Set());
 
   const { data: meals = [], isLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
+  });
+
+  const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
+    queryKey: ["/api/favourites"],
+    onSuccess: (data) => {
+      setFavouriteMeals(new Set(data.map(f => f.mealId)));
+    }
   });
 
   const favouriteMealsList = meals.filter(meal => favouriteMeals.has(meal.id));
@@ -29,17 +33,36 @@ export default function Favourites() {
     setShowRecipeModal(true);
   };
 
-  const toggleFavouriteStatus = (mealId: string) => {
+  const toggleFavouriteStatus = async (mealId: string) => {
     const newFavouriteMeals = new Set(favouriteMeals);
     
-    if (favouriteMeals.has(mealId)) {
-      newFavouriteMeals.delete(mealId);
-    } else {
-      newFavouriteMeals.add(mealId);
+    try {
+      if (favouriteMeals.has(mealId)) {
+        // Remove from favourites
+        const response = await fetch(`/api/favourites/${mealId}?userId=default-user`, {
+          method: 'DELETE',
+        });
+        
+        if (response.ok) {
+          newFavouriteMeals.delete(mealId);
+          setFavouriteMeals(newFavouriteMeals);
+        }
+      } else {
+        // Add to favourites
+        const response = await fetch('/api/favourites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mealId, userId: 'default-user' }),
+        });
+        
+        if (response.ok) {
+          newFavouriteMeals.add(mealId);
+          setFavouriteMeals(newFavouriteMeals);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating favourite:', error);
     }
-    
-    setFavouriteMeals(newFavouriteMeals);
-    localStorage.setItem('favoriteMeals', JSON.stringify(Array.from(newFavouriteMeals)));
   };
 
   if (isLoading) {

@@ -89,6 +89,17 @@ export default function MealPlan() {
     queryKey: ["/api/meals"],
   });
 
+  const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
+    queryKey: ["/api/favourites"],
+    onSuccess: (data) => {
+      setFavoriteMeals(new Set(data.map(f => f.mealId)));
+    }
+  });
+
+  const { data: pantryItems = [], isLoading: pantryLoading } = useQuery<PantryItem[]>({
+    queryKey: ["/api/pantry-items"],
+  });
+
   const { data: mealPlan } = useQuery<MealPlan>({
     queryKey: ["/api/meal-plans", currentWeek],
     retry: false,
@@ -207,19 +218,39 @@ export default function MealPlan() {
     setCookedMeals(newCookedMeals);
   };
 
-  const toggleFavoriteStatus = (mealId: string) => {
+  const toggleFavoriteStatus = async (mealId: string) => {
     const newFavoriteMeals = new Set(favoriteMeals);
 
-    if (favoriteMeals.has(mealId)) {
-      newFavoriteMeals.delete(mealId);
-      toast({ title: "Removed from favourites" });
-    } else {
-      newFavoriteMeals.add(mealId);
-      toast({ title: "Added to favourites! ❤️" });
-    }
+    try {
+      if (favoriteMeals.has(mealId)) {
+        // Remove from favourites
+        const response = await fetch(`/api/favourites/${mealId}?userId=default-user`, {
+          method: 'DELETE',
+        });
 
-    setFavoriteMeals(newFavoriteMeals);
-    localStorage.setItem('favoriteMeals', JSON.stringify(Array.from(newFavoriteMeals)));
+        if (response.ok) {
+          newFavoriteMeals.delete(mealId);
+          setFavoriteMeals(newFavoriteMeals);
+          toast({ title: "Removed from favourites" });
+        }
+      } else {
+        // Add to favourites
+        const response = await fetch('/api/favourites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mealId, userId: 'default-user' }),
+        });
+
+        if (response.ok) {
+          newFavoriteMeals.add(mealId);
+          setFavoriteMeals(newFavoriteMeals);
+          toast({ title: "Added to favourites" });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+      toast({ title: "Failed to update favourite", variant: "destructive" });
+    }
   };
 
   // Check if navigation buttons should be disabled
