@@ -24,7 +24,7 @@ function App() {
                 <Route path="/" component={Home} />
                 <Route path="/meal-plan" component={MealPlan} />
                 <Route path="/shopping-list" component={ShoppingList} />
-                <Route path="/favorites" component={Favourites} />
+                <Route path="/favourites" component={Favourites} />
                 <Route path="/pantry" component={Pantry} />
                 <Route path="/admin" component={Admin} />
                 <Route component={NotFound} />

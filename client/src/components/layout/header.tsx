@@ -12,7 +12,7 @@ export function Header() {
     { name: "Shopping List", path: "/shopping-list" },
     { name: "Pantry", path: "/pantry" },
     { name: "Admin", path: "/admin" },
-    { name: "Favourites", path: "/favorites" },
+    { name: "Favourites", path: "/favourites" },
   ];
 
   return (
