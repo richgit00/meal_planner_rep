@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MealSelectionModal } from "@/components/meal-selection-modal";
@@ -79,6 +79,7 @@ export default function MealPlan() {
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
+  const [cookedMeals, setCookedMeals] = useState<Set<string>>(new Set());
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -174,6 +175,7 @@ export default function MealPlan() {
     const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
     if (newWeek >= earliestWeek) {
       setCurrentWeek(newWeek);
+      setCookedMeals(new Set()); // Reset cooked status when changing weeks
     }
   };
 
@@ -182,7 +184,23 @@ export default function MealPlan() {
     const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
     if (newWeek <= latestWeek) {
       setCurrentWeek(newWeek);
+      setCookedMeals(new Set()); // Reset cooked status when changing weeks
     }
+  };
+
+  const toggleCookedStatus = (dayName: string, mealId: string) => {
+    const cookedKey = `${dayName}-${mealId}`;
+    const newCookedMeals = new Set(cookedMeals);
+    
+    if (cookedMeals.has(cookedKey)) {
+      newCookedMeals.delete(cookedKey);
+      toast({ title: "Marked as not cooked" });
+    } else {
+      newCookedMeals.add(cookedKey);
+      toast({ title: "Marked as cooked! 🍽️" });
+    }
+    
+    setCookedMeals(newCookedMeals);
   };
 
   // Check if navigation buttons should be disabled
@@ -267,11 +285,33 @@ export default function MealPlan() {
                         <img
                           src={meal.image}
                           alt={meal.name}
-                          className="w-full h-20 object-cover rounded-lg"
+                          className={`w-full h-20 object-cover rounded-lg transition-opacity ${
+                            cookedMeals.has(`${day.name}-${meal.id}`) ? 'opacity-60' : ''
+                          }`}
                         />
-                        <h4 className="font-medium text-slate-800 text-sm">{meal.name}</h4>
+                        <h4 className={`font-medium text-sm ${
+                          cookedMeals.has(`${day.name}-${meal.id}`) ? 'text-slate-500 line-through' : 'text-slate-800'
+                        }`}>
+                          {meal.name}
+                        </h4>
                         <p className="text-xs text-slate-500">{meal.cookTime}</p>
                       </div>
+                      <Button
+                        size="sm"
+                        variant={cookedMeals.has(`${day.name}-${meal.id}`) ? "default" : "outline"}
+                        className={`w-full text-xs ${
+                          cookedMeals.has(`${day.name}-${meal.id}`) 
+                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                            : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCookedStatus(day.name, meal.id);
+                        }}
+                      >
+                        <Check className="h-3 w-3 mr-1" />
+                        {cookedMeals.has(`${day.name}-${meal.id}`) ? 'Cooked!' : 'Mark Cooked'}
+                      </Button>
                     </div>
                   ) : (
                     <div>
