@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X, Check, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MealSelectionModal } from "@/components/meal-selection-modal";
@@ -80,6 +80,7 @@ export default function MealPlan() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
   const [cookedMeals, setCookedMeals] = useState<Set<string>>(new Set());
+  const [favoriteMeals, setFavoriteMeals] = useState<Set<string>>(new Set());
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -203,6 +204,20 @@ export default function MealPlan() {
     setCookedMeals(newCookedMeals);
   };
 
+  const toggleFavoriteStatus = (mealId: string) => {
+    const newFavoriteMeals = new Set(favoriteMeals);
+    
+    if (favoriteMeals.has(mealId)) {
+      newFavoriteMeals.delete(mealId);
+      toast({ title: "Removed from favorites" });
+    } else {
+      newFavoriteMeals.add(mealId);
+      toast({ title: "Added to favorites! ❤️" });
+    }
+    
+    setFavoriteMeals(newFavoriteMeals);
+  };
+
   // Check if navigation buttons should be disabled
   const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
   const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
@@ -296,22 +311,40 @@ export default function MealPlan() {
                         </h4>
                         <p className="text-xs text-slate-500">{meal.cookTime}</p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant={cookedMeals.has(`${day.name}-${meal.id}`) ? "default" : "outline"}
-                        className={`w-full text-xs ${
-                          cookedMeals.has(`${day.name}-${meal.id}`) 
-                            ? 'bg-green-600 hover:bg-green-700 text-white' 
-                            : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleCookedStatus(day.name, meal.id);
-                        }}
-                      >
-                        <Check className="h-3 w-3 mr-1" />
-                        {cookedMeals.has(`${day.name}-${meal.id}`) ? 'Cooked!' : 'Mark Cooked'}
-                      </Button>
+                      <div className="space-y-2">
+                        <Button
+                          size="sm"
+                          variant={cookedMeals.has(`${day.name}-${meal.id}`) ? "default" : "outline"}
+                          className={`w-full text-xs ${
+                            cookedMeals.has(`${day.name}-${meal.id}`) 
+                              ? 'bg-green-600 hover:bg-green-700 text-white' 
+                              : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCookedStatus(day.name, meal.id);
+                          }}
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          {cookedMeals.has(`${day.name}-${meal.id}`) ? 'Cooked!' : 'Mark Cooked'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={favoriteMeals.has(meal.id) ? "default" : "outline"}
+                          className={`w-full text-xs ${
+                            favoriteMeals.has(meal.id) 
+                              ? 'bg-red-500 hover:bg-red-600 text-white' 
+                              : 'hover:bg-red-50 hover:text-red-700 hover:border-red-300'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavoriteStatus(meal.id);
+                          }}
+                        >
+                          <Heart className="h-3 w-3 mr-1" />
+                          {favoriteMeals.has(meal.id) ? 'Favorited!' : 'Add Favorite'}
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div>
