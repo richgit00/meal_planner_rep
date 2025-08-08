@@ -13,7 +13,10 @@ export default function Favourites() {
   const [location, setLocation] = useLocation();
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [favouriteMeals, setFavouriteMeals] = useState<Set<string>>(new Set());
+  const [favouriteMeals, setFavouriteMeals] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem('favoriteMeals');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
 
   const { data: meals = [], isLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -36,6 +39,7 @@ export default function Favourites() {
     }
     
     setFavouriteMeals(newFavouriteMeals);
+    localStorage.setItem('favoriteMeals', JSON.stringify(Array.from(newFavouriteMeals)));
   };
 
   if (isLoading) {

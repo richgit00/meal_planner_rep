@@ -80,7 +80,10 @@ export default function MealPlan() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
   const [cookedMeals, setCookedMeals] = useState<Set<string>>(new Set());
-  const [favoriteMeals, setFavoriteMeals] = useState<Set<string>>(new Set());
+  const [favoriteMeals, setFavoriteMeals] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem('favoriteMeals');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  });
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -216,6 +219,7 @@ export default function MealPlan() {
     }
 
     setFavoriteMeals(newFavoriteMeals);
+    localStorage.setItem('favoriteMeals', JSON.stringify(Array.from(newFavoriteMeals)));
   };
 
   // Check if navigation buttons should be disabled
