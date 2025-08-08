@@ -169,7 +169,7 @@ export default function MealPlan() {
     }
   };
 
-  
+
 
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
@@ -192,7 +192,7 @@ export default function MealPlan() {
   const toggleCookedStatus = (dayName: string, mealId: string) => {
     const cookedKey = `${dayName}-${mealId}`;
     const newCookedMeals = new Set(cookedMeals);
-    
+
     if (cookedMeals.has(cookedKey)) {
       newCookedMeals.delete(cookedKey);
       toast({ title: "Marked as not cooked" });
@@ -200,21 +200,21 @@ export default function MealPlan() {
       newCookedMeals.add(cookedKey);
       toast({ title: "Marked as cooked! 🍽️" });
     }
-    
+
     setCookedMeals(newCookedMeals);
   };
 
   const toggleFavoriteStatus = (mealId: string) => {
     const newFavoriteMeals = new Set(favoriteMeals);
-    
+
     if (favoriteMeals.has(mealId)) {
       newFavoriteMeals.delete(mealId);
-      toast({ title: "Removed from favorites" });
+      toast({ title: "Removed from favourites" });
     } else {
       newFavoriteMeals.add(mealId);
-      toast({ title: "Added to favorites! ❤️" });
+      toast({ title: "Added to favourites! ❤️" });
     }
-    
+
     setFavoriteMeals(newFavoriteMeals);
   };
 
@@ -274,7 +274,7 @@ export default function MealPlan() {
                   <p className="text-sm text-slate-500">{day.date}</p>
                 </div>
                 <div
-                  className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-colors duration-200 min-h-[120px] flex flex-col justify-center"
+                  className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-colors duration-200 min-h-[120px] flex flex-col justify-center relative"
                   onClick={() => handleDayClick(day.name)}
                 >
                   {meal ? (
@@ -330,19 +330,18 @@ export default function MealPlan() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={favoriteMeals.has(meal.id) ? "default" : "outline"}
-                          className={`w-full text-xs ${
+                          variant="ghost"
+                          className={`absolute top-1 left-1 h-6 w-6 p-0 z-10 ${
                             favoriteMeals.has(meal.id) 
-                              ? 'bg-red-500 hover:bg-red-600 text-white' 
-                              : 'hover:bg-red-50 hover:text-red-700 hover:border-red-300'
+                              ? 'text-red-500 hover:text-red-600' 
+                              : 'text-slate-400 hover:text-red-500'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             toggleFavoriteStatus(meal.id);
                           }}
                         >
-                          <Heart className="h-3 w-3 mr-1" />
-                          {favoriteMeals.has(meal.id) ? 'Favorited!' : 'Add Favorite'}
+                          <Heart className={`h-4 w-4 ${favoriteMeals.has(meal.id) ? 'fill-current' : ''}`} />
                         </Button>
                       </div>
                     </div>
