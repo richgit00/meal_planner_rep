@@ -2,9 +2,9 @@ import type { Express } from "express";
 import { randomUUID } from "crypto";
 
 import { db } from "./db";
-import { meals, mealPlans, pantryItems } from "@shared/schema";
-import { insertMealPlanSchema, insertMealSchema, insertPantryItemSchema } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { meals, mealPlans, pantryItems, favourites } from "@shared/schema";
+import { insertMealPlanSchema, insertMealSchema, insertPantryItemSchema, insertFavouriteSchema } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<void> {
   // Meals
@@ -489,6 +489,65 @@ export async function registerRoutes(app: Express): Promise<void> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to generate shopping list" });
+    }
+  });
+
+  // Favourites routes
+  app.get("/api/favourites", async (req, res) => {
+    try {
+      const userId = req.query.userId as string || "default-user"; // For now, use default user
+      const userFavourites = await db.select().from(favourites).where(eq(favourites.userId, userId));
+      res.json(userFavourites);
+    } catch (error) {
+      console.error("Error fetching favourites:", error);
+      res.status(500).json({ message: "Failed to fetch favourites" });
+    }
+  });
+
+  app.post("/api/favourites", async (req, res) => {
+    try {
+      const userId = req.body.userId || "default-user"; // For now, use default user
+      const { mealId } = req.body;
+      
+      // Check if already favourited
+      const existing = await db.select().from(favourites)
+        .where(and(eq(favourites.mealId, mealId), eq(favourites.userId, userId)));
+      
+      if (existing.length > 0) {
+        return res.status(400).json({ message: "Meal already favourited" });
+      }
+
+      const favouriteWithId = { 
+        id: randomUUID(), 
+        mealId, 
+        userId 
+      };
+      
+      const [favourite] = await db.insert(favourites).values(favouriteWithId).returning();
+      res.status(201).json(favourite);
+    } catch (error) {
+      console.error("Error adding favourite:", error);
+      res.status(500).json({ message: "Failed to add favourite" });
+    }
+  });
+
+  app.delete("/api/favourites/:mealId", async (req, res) => {
+    try {
+      const userId = req.query.userId as string || "default-user"; // For now, use default user
+      const { mealId } = req.params;
+      
+      const [deleted] = await db.delete(favourites)
+        .where(and(eq(favourites.mealId, mealId), eq(favourites.userId, userId)))
+        .returning();
+        
+      if (!deleted) {
+        return res.status(404).json({ message: "Favourite not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing favourite:", error);
+      res.status(500).json({ message: "Failed to remove favourite" });
     }
   });
 }
