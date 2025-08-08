@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/header";
 import Home from "@/pages/home";
 import MealPlan from "@/pages/meal-plan";
 import ShoppingList from "@/pages/shopping-list";
-import Favourites from "@/pages/favorites";
+import Favourites from "@/pages/favourites";
 import Pantry from "@/pages/pantry";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";

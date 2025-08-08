@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, CheckCircle, ShoppingCart, Package } from "lucide-react";
+import { CalendarDays, Heart, ShoppingCart, Package } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { type MealPlan } from "@shared/schema";
@@ -64,7 +64,7 @@ export default function Home() {
             <CardContent className="p-4 sm:p-6">
               <div className="text-center">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                  <CheckCircle className="text-red-500 text-xl sm:text-2xl" />
+                  <Heart className="text-red-500 text-xl sm:text-2xl" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-slate-800 mb-2">Favourites</h3>
                 <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">View your favourite meals</p>
