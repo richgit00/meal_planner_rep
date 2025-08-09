@@ -18,9 +18,8 @@ import { insertMealSchema, type Meal, type InsertMeal } from "@shared/schema";
 import { z } from "zod";
 
 const mealFormSchema = insertMealSchema.extend({
-  ingredientsText: z.string().min(1, "At least one ingredient is required"),
-  utensilsText: z.string().min(1, "At least one utensil is required"),
-  instructionsText: z.string().min(1, "At least one instruction is required"),
+  ingredientsText: z.string().min(1, "Ingredients are required"),
+  instructionsText: z.string().min(1, "Instructions are required"),
 });
 
 type MealFormData = z.infer<typeof mealFormSchema>;
@@ -46,7 +45,6 @@ export default function Admin() {
       servings: 4,
       image: "",
       ingredientsText: "",
-      utensilsText: "",
       instructionsText: "",
     },
   });
@@ -66,7 +64,6 @@ export default function Admin() {
         servings: 4,
         image: "",
         ingredientsText: "",
-        utensilsText: "",
         instructionsText: "",
       });
     }, 100);
@@ -79,7 +76,6 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
       toast({ title: "Meal created successfully!" });
       handleCloseDialog();
     },
@@ -96,7 +92,6 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
       toast({ title: "Meal updated successfully!" });
       handleCloseDialog();
     },
@@ -117,8 +112,6 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
       toast({ title: "Meal deleted successfully!" });
     },
     onError: (error: any) => {
@@ -137,7 +130,6 @@ export default function Admin() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
       toast({ title: `Successfully imported ${data.imported} out of ${data.total} meals!` });
       setBulkImportText("");
     },
@@ -169,61 +161,31 @@ export default function Admin() {
     return instructions.join('\n');
   };
 
-  const onSubmit = (values: MealFormData) => {
-    console.log("Form submitted with data:", values);
+  const onSubmit = (data: MealFormData) => {
+    console.log("Form submitted with data:", data);
 
-    try {
-      const ingredients = values.ingredientsText
-        .split('\n')
-        .filter(line => line.trim())
-        .map(line => {
-          const parts = line.split('|').map(p => p.trim());
-          if (parts.length !== 3) {
-            throw new Error(`Invalid ingredient format: ${line}`);
-          }
-          return {
-            name: parts[0],
-            amount: parts[1],
-            category: parts[2] as 'fresh' | 'pantry'
-          };
-        });
+    const ingredients = parseIngredientsText(data.ingredientsText);
+    const instructions = parseInstructionsText(data.instructionsText);
 
-      const utensils = values.utensilsText
-        .split('\n')
-        .filter(line => line.trim());
+    const mealData: InsertMeal = {
+      name: data.name,
+      description: data.description,
+      cookTime: data.cookTime,
+      difficulty: data.difficulty,
+      servings: data.servings,
+      image: data.image,
+      ingredients,
+      instructions,
+    };
 
-      const instructions = values.instructionsText
-        .split('\n')
-        .filter(line => line.trim());
+    console.log("Submitting meal data:", mealData);
 
-      const mealData: InsertMeal = {
-        name: values.name,
-        description: values.description,
-        cookTime: values.cookTime,
-        difficulty: values.difficulty,
-        servings: values.servings,
-        image: values.image,
-        ingredients,
-        utensils,
-        instructions,
-      };
-
-      console.log("Submitting meal data:", mealData);
-
-      if (editingMeal) {
-        console.log("Updating meal with ID:", editingMeal.id);
-        updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
-      } else {
-        console.log("Creating new meal");
-        createMealMutation.mutate(mealData);
-      }
-    } catch (error: any) {
-      console.error("Error processing form data:", error);
-      toast({
-        title: "Validation Error",
-        description: error.message || "Please check your input format.",
-        variant: "destructive"
-      });
+    if (editingMeal) {
+      console.log("Updating meal with ID:", editingMeal.id);
+      updateMealMutation.mutate({ id: editingMeal.id, ...mealData });
+    } else {
+      console.log("Creating new meal");
+      createMealMutation.mutate(mealData);
     }
   };
 
@@ -237,7 +199,6 @@ export default function Admin() {
       servings: meal.servings,
       image: meal.image,
       ingredientsText: formatIngredientsText(meal.ingredients),
-      utensilsText: meal.utensils?.join('\n') || "",
       instructionsText: formatInstructionsText(meal.instructions),
     });
     setShowMealDialog(true);
@@ -262,7 +223,7 @@ export default function Admin() {
   const getProteinType = (meal: Meal): string => {
     const name = meal.name.toLowerCase();
     const ingredientsText = meal.ingredients?.map(ing => ing.name.toLowerCase()).join(' ') || '';
-
+    
     if (name.includes('beef') || ingredientsText.includes('beef') || name.includes('steak') || ingredientsText.includes('steak')) {
       return 'Beef';
     }
@@ -308,9 +269,9 @@ export default function Admin() {
   const downloadCSVTemplate = () => {
     const csvContent = [
       // CSV Header
-      'name,description,cookTime,difficulty,servings,image,ingredients,utensils,instructions',
+      'name,description,cookTime,difficulty,servings,image,ingredients,instructions',
       // Example row to show format
-      'Example Chicken Parmesan,"Crispy breaded chicken with marinara and cheese","45 mins",Medium,4,"https://images.unsplash.com/photo-1551183053-bf91a1d81141","Chicken breast|2 lbs|fresh;Large saucepan|1|general;Frying pan|1|general","Pound chicken to even thickness;Bread chicken with breadcrumbs;Fry until golden brown;Top with sauce and cheese;Bake at 375°F for 20 minutes"'
+      'Example Chicken Parmesan,"Crispy breaded chicken with marinara and cheese","45 mins",Medium,4,"https://images.unsplash.com/photo-1551183053-bf91a1d81141","Chicken breast|2 lbs|fresh;Breadcrumbs|2 cups|pantry;Marinara sauce|2 cups|pantry;Mozzarella cheese|2 cups|fresh","Pound chicken to even thickness;Bread chicken with breadcrumbs;Fry until golden brown;Top with sauce and cheese;Bake at 375°F for 20 minutes"'
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -363,11 +324,11 @@ export default function Admin() {
             }
             fields.push(current); // Add last field
 
-            if (fields.length !== 9) {
-              throw new Error(`Row ${index + 2} has ${fields.length} fields, expected 9`);
+            if (fields.length !== 8) {
+              throw new Error(`Row ${index + 2} has ${fields.length} fields, expected 8`);
             }
 
-            const [name, description, cookTime, difficulty, servings, image, ingredientsText, utensilsText, instructionsText] = fields;
+            const [name, description, cookTime, difficulty, servings, image, ingredientsText, instructionsText] = fields;
 
             // Parse ingredients (format: "item|amount|category;item2|amount2|category2")
             const ingredients = ingredientsText.split(';').map(ing => {
@@ -378,9 +339,6 @@ export default function Admin() {
                 category: (parts[2]?.trim() === 'pantry' ? 'pantry' : 'fresh') as 'fresh' | 'pantry'
               };
             }).filter(ing => ing.name);
-
-            // Parse utensils (format: "utensil1;utensil2;utensil3")
-            const utensils = utensilsText.split(';').map(utensil => utensil.trim()).filter(utensil => utensil);
 
             // Parse instructions (format: "step1;step2;step3")
             const instructions = instructionsText.split(';').map(step => step.trim()).filter(step => step);
@@ -393,7 +351,6 @@ export default function Admin() {
               servings: parseInt(servings) || 4,
               image: image.trim(),
               ingredients,
-              utensils,
               instructions
             };
           } catch (error) {
@@ -487,7 +444,7 @@ export default function Admin() {
           <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Meal Administration</h2>
           <p className="text-sm sm:text-base text-slate-600 mt-1">Manage your meal collection</p>
         </div>
-
+        
         {/* Action Buttons */}
         <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-2">
           {/* Primary Action - Add Meal */}
@@ -621,24 +578,6 @@ export default function Admin() {
 
                   <FormField
                     control={form.control}
-                    name="utensilsText"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Utensils (one per line)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Large saucepan&#10;Frying pan"
-                            className="min-h-[100px]"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="instructionsText"
                     render={({ field }) => (
                       <FormItem>
@@ -675,14 +614,13 @@ export default function Admin() {
                           formData.description?.trim() && 
                           formData.cookTime?.trim() && 
                           formData.ingredientsText?.trim() && 
-                          formData.utensilsText?.trim() &&
                           formData.instructionsText?.trim();
 
                         if (!requiredFieldsValid) {
                           console.log("Required fields missing");
                           toast({
                             title: "Validation Error",
-                            description: "Please fill in all required fields (name, description, cook time, ingredients, utensils, instructions).",
+                            description: "Please fill in all required fields (name, description, cook time, ingredients, instructions).",
                             variant: "destructive"
                           });
                           return;
@@ -694,12 +632,8 @@ export default function Admin() {
 
                         // Parse and prepare data
                         const ingredients = parseIngredientsText(formData.ingredientsText);
-                        const utensils = formData.utensilsText
-                          .split('\n')
-                          .filter(line => line.trim());
                         const instructions = parseInstructionsText(formData.instructionsText);
                         console.log("Parsed ingredients:", ingredients);
-                        console.log("Parsed utensils:", utensils);
                         console.log("Parsed instructions:", instructions);
 
                         const mealData = {
@@ -710,7 +644,6 @@ export default function Admin() {
                           servings: formData.servings,
                           image: formData.image,
                           ingredients,
-                          utensils,
                           instructions,
                         };
                         console.log("Final meal data to send:", mealData);
@@ -763,7 +696,7 @@ export default function Admin() {
             </DialogContent>
           </Dialog>
         </div>
-
+        
         {/* Secondary Actions - Mobile: Stack, Desktop: Row */}
         <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 mt-3 sm:mt-2">
           <Button 
@@ -775,7 +708,7 @@ export default function Admin() {
             <span className="hidden sm:inline">Download CSV Template</span>
             <span className="sm:hidden">Download Template</span>
           </Button>
-
+          
           <Button 
             onClick={handleCSVImport} 
             variant="outline"
@@ -785,7 +718,7 @@ export default function Admin() {
             <span className="hidden sm:inline">Import CSV</span>
             <span className="sm:hidden">Import CSV</span>
           </Button>
-
+          
           <input
             ref={csvFileInputRef}
             type="file"
@@ -793,7 +726,7 @@ export default function Admin() {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-
+          
           <Button 
             onClick={() => cleanupPantryMutation.mutate()} 
             variant="outline" 
@@ -852,7 +785,6 @@ export default function Admin() {
                     <div className="text-sm text-slate-600">
                       <strong>Servings:</strong> {meal.servings}<br />
                       <strong>Ingredients:</strong> {meal.ingredients?.length || 0}<br />
-                      <strong>Utensils:</strong> {meal.utensils?.length || 0}<br />
                       <strong>Steps:</strong> {meal.instructions?.length || 0}
                     </div>
                   </CardContent>
@@ -862,6 +794,8 @@ export default function Admin() {
           </div>
         ))}
       </div>
+
+
     </div>
   );
 }

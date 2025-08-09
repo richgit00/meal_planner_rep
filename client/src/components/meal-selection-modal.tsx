@@ -74,6 +74,7 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
                     key={meal.id}
                     onClick={() => {
                       onSelectMeal(meal);
+                      onOpenChange(false);
                     }}
                     className="meal-option bg-slate-50 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-primary border-2 border-transparent transition-colours duration-200"
                   >

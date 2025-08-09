@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Heart, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,6 @@ export default function Favourites() {
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [favouriteMeals, setFavouriteMeals] = useState<Set<string>>(new Set());
-  const queryClient = useQueryClient();
 
   const { data: meals = [], isLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -22,14 +21,10 @@ export default function Favourites() {
 
   const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
     queryKey: ["/api/favourites"],
-  });
-
-  // Update favourite meals state when data changes
-  React.useEffect(() => {
-    if (favouritesData) {
-      setFavouriteMeals(new Set(favouritesData.map(f => f.mealId)));
+    onSuccess: (data) => {
+      setFavouriteMeals(new Set(data.map(f => f.mealId)));
     }
-  }, [favouritesData]);
+  });
 
   const favouriteMealsList = meals.filter(meal => favouriteMeals.has(meal.id));
 
@@ -39,6 +34,8 @@ export default function Favourites() {
   };
 
   const toggleFavouriteStatus = async (mealId: string) => {
+    const newFavouriteMeals = new Set(favouriteMeals);
+    
     try {
       if (favouriteMeals.has(mealId)) {
         // Remove from favourites
@@ -47,11 +44,8 @@ export default function Favourites() {
         });
         
         if (response.ok) {
-          // Invalidate favorites cache across all pages
-          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
-          // Force refetch to update UI immediately
-          queryClient.refetchQueries({ queryKey: ["/api/favourites"] });
+          newFavouriteMeals.delete(mealId);
+          setFavouriteMeals(newFavouriteMeals);
         }
       } else {
         // Add to favourites
@@ -62,11 +56,8 @@ export default function Favourites() {
         });
         
         if (response.ok) {
-          // Invalidate favorites cache across all pages
-          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
-          // Force refetch to update UI immediately
-          queryClient.refetchQueries({ queryKey: ["/api/favourites"] });
+          newFavouriteMeals.add(mealId);
+          setFavouriteMeals(newFavouriteMeals);
         }
       }
     } catch (error) {

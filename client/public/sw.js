@@ -1,21 +1,27 @@
 
-const CACHE_NAME = 'meal-plan-v3';
+const CACHE_NAME = 'meal-plan-v1';
 const urlsToCache = [
   '/',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/src/main.tsx',
-  '/src/index.css'
+  '/static/js/bundle.js',
+  '/static/css/main.css',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => self.skipWaiting())
+      .then((cache) => cache.addAll(urlsToCache))
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
+      }
+    )
   );
 });
 
@@ -29,36 +35,6 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        
-        return fetch(event.request).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        }).catch(() => {
-          // Return offline page or cached response for navigation requests
-          if (event.request.destination === 'document') {
-            return caches.match('/');
-          }
-        });
-      })
+    })
   );
 });

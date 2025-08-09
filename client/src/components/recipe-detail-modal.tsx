@@ -50,8 +50,8 @@ export function RecipeDetailModal({ open, onOpenChange, meal }: RecipeDetailModa
               </div>
             </div>
 
-            {/* Ingredients, Utensils and Instructions */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Ingredients and Instructions */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <h4 className="text-lg font-semibold text-slate-800 mb-4">Ingredients</h4>
                 <div className="space-y-2">
@@ -59,17 +59,6 @@ export function RecipeDetailModal({ open, onOpenChange, meal }: RecipeDetailModa
                     <div key={index} className="flex items-center py-2 border-b border-slate-100">
                       <span className="text-slate-600 w-20 text-sm">{ingredient.amount}</span>
                       <span className="text-slate-800">{ingredient.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-slate-800 mb-4">Utensils</h4>
-                <div className="space-y-2">
-                  {meal.utensils.map((utensil, index) => (
-                    <div key={index} className="flex items-center py-2 border-b border-slate-100">
-                      <span className="text-slate-800">{utensil}</span>
                     </div>
                   ))}
                 </div>
