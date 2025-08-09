@@ -445,7 +445,12 @@ export default function MealPlan() {
 
       <MealSelectionModal
         open={showMealModal}
-        onOpenChange={setShowMealModal}
+        onOpenChange={(open) => {
+          setShowMealModal(open);
+          if (!open) {
+            setSelectedDay(null);
+          }
+        }}
         meals={meals}
         onSelectMeal={handleMealSelect}
       />
