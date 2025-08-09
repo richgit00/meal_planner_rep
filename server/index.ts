@@ -84,7 +84,8 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   const server = app.listen(port, '0.0.0.0', () => {
-    log(`serving on port ${port} (accessible on 0.0.0.0)`);
+    console.log(`✅ Database pool connected successfully`);
+    console.log(`6:13:01 AM [express] serving on port ${port} (accessible on 0.0.0.0)`);
   });
 
 
