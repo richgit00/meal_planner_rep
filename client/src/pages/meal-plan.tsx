@@ -84,6 +84,7 @@ export default function MealPlan() {
     const stored = localStorage.getItem('favoriteMeals');
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -148,7 +149,11 @@ export default function MealPlan() {
   };
 
   const handleMealSelect = async (meal: Meal) => {
-    if (!selectedDay) return;
+    if (!selectedDay || isUpdating) return;
+    
+    setIsUpdating(true);
+    setShowMealModal(false);
+    setSelectedDay(null);
 
     try {
       const updatedMeals = currentMeals.map(dayMeal =>
@@ -163,9 +168,6 @@ export default function MealPlan() {
           meals: updatedMeals,
         });
       }
-      
-      setShowMealModal(false);
-      setSelectedDay(null);
     } catch (error) {
       console.error('Error adding meal:', error);
       toast({ 
@@ -173,6 +175,8 @@ export default function MealPlan() {
         description: "Please try again",
         variant: "destructive" 
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -185,6 +189,10 @@ export default function MealPlan() {
   };
 
   const handleMealDelete = async (dayName: string) => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+
     try {
       const updatedMeals = currentMeals.map(dayMeal =>
         dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
@@ -207,6 +215,8 @@ export default function MealPlan() {
         description: "Please try again",
         variant: "destructive" 
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
