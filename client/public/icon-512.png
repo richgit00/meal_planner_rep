@@ -1,2 +1,12 @@
 
-data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiBmaWxsPSIjMDAwMDAwIi8+Cjx0ZXh0IHg9IjI1NiIgeT0iMjgwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTI4IiBmaWxsPSIjZmZmZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5NUDwvdGV4dD4KPHN2Zz4K
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="512" height="512" rx="64" fill="#4CAF50"/>
+<circle cx="256" cy="180" r="70" fill="#ffffff"/>
+<rect x="206" y="270" width="100" height="20" rx="10" fill="#ffffff"/>
+<rect x="186" y="310" width="140" height="20" rx="10" fill="#ffffff"/>
+<rect x="216" y="350" width="80" height="20" rx="10" fill="#ffffff"/>
+<path d="M256 110 L280 134 L256 158 L232 134 Z" fill="#2E7D32"/>
+<circle cx="256" cy="420" r="20" fill="#FFC107"/>
+<circle cx="206" cy="420" r="12" fill="#FF9800"/>
+<circle cx="306" cy="420" r="12" fill="#FF5722"/>
+</svg>
