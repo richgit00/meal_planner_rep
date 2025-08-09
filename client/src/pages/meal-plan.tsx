@@ -198,17 +198,22 @@ export default function MealPlan() {
   const handleMealDelete = async (dayName: string) => {
     if (!mealPlan) return;
 
-    setIsUpdating(true);
-
-    const updatedMeals = mealPlan.meals.map(dayMeal =>
-      dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
-    );
-
     try {
+      setIsUpdating(true);
+
+      const updatedMeals = weekDays.map(day => {
+        if (day.name === dayName) {
+          return { day: day.name, mealId: null };
+        }
+        const existing = mealPlan.meals.find(m => m.day === day.name);
+        return { day: day.name, mealId: existing?.mealId || null };
+      });
+
       await updateMealPlanMutation.mutateAsync({ 
         id: mealPlan.id, 
         meals: updatedMeals 
       });
+
       toast({ title: "Meal removed successfully!" });
     } catch (error) {
       toast({ title: "Failed to remove meal", variant: "destructive" });
