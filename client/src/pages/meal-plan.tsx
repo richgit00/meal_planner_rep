@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X, Check, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MealSelectionModal } from "@/components/meal-selection-modal";
@@ -80,27 +80,9 @@ export default function MealPlan() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
   const [cookedMeals, setCookedMeals] = useState<Set<string>>(new Set());
-  const [favoriteMeals, setFavoriteMeals] = useState<Set<string>>(() => {
-    const stored = localStorage.getItem('favoriteMeals');
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  });
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
-  });
-
-  const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
-    queryKey: ["/api/favourites"],
-  });
-
-  React.useEffect(() => {
-    if (favouritesData) {
-      setFavoriteMeals(new Set(favouritesData.map(f => f.mealId)));
-    }
-  }, [favouritesData]);
-
-  const { data: pantryItems = [], isLoading: pantryLoading } = useQuery<PantryItem[]>({
-    queryKey: ["/api/pantry-items"],
   });
 
   const { data: mealPlan } = useQuery<MealPlan>({
@@ -186,7 +168,7 @@ export default function MealPlan() {
     }
   };
 
-
+  
 
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
@@ -209,7 +191,7 @@ export default function MealPlan() {
   const toggleCookedStatus = (dayName: string, mealId: string) => {
     const cookedKey = `${dayName}-${mealId}`;
     const newCookedMeals = new Set(cookedMeals);
-
+    
     if (cookedMeals.has(cookedKey)) {
       newCookedMeals.delete(cookedKey);
       toast({ title: "Marked as not cooked" });
@@ -217,43 +199,8 @@ export default function MealPlan() {
       newCookedMeals.add(cookedKey);
       toast({ title: "Marked as cooked! 🍽️" });
     }
-
+    
     setCookedMeals(newCookedMeals);
-  };
-
-  const toggleFavoriteStatus = async (mealId: string) => {
-    const newFavoriteMeals = new Set(favoriteMeals);
-
-    try {
-      if (favoriteMeals.has(mealId)) {
-        // Remove from favourites
-        const response = await fetch(`/api/favourites/${mealId}?userId=default-user`, {
-          method: 'DELETE',
-        });
-
-        if (response.ok) {
-          newFavoriteMeals.delete(mealId);
-          setFavoriteMeals(newFavoriteMeals);
-          toast({ title: "Removed from favourites" });
-        }
-      } else {
-        // Add to favourites
-        const response = await fetch('/api/favourites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mealId, userId: 'default-user' }),
-        });
-
-        if (response.ok) {
-          newFavoriteMeals.add(mealId);
-          setFavoriteMeals(newFavoriteMeals);
-          toast({ title: "Added to favourites" });
-        }
-      }
-    } catch (error) {
-      console.error('Error updating favourite:', error);
-      toast({ title: "Failed to update favourite", variant: "destructive" });
-    }
   };
 
   // Check if navigation buttons should be disabled
@@ -312,7 +259,7 @@ export default function MealPlan() {
                   <p className="text-sm text-slate-500">{day.date}</p>
                 </div>
                 <div
-                  className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-colors duration-200 min-h-[120px] flex flex-col justify-center relative"
+                  className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-colors duration-200 min-h-[120px] flex flex-col justify-center"
                   onClick={() => handleDayClick(day.name)}
                 >
                   {meal ? (
@@ -349,39 +296,22 @@ export default function MealPlan() {
                         </h4>
                         <p className="text-xs text-slate-500">{meal.cookTime}</p>
                       </div>
-                      <div className="space-y-2">
-                        <Button
-                          size="sm"
-                          variant={cookedMeals.has(`${day.name}-${meal.id}`) ? "default" : "outline"}
-                          className={`w-full text-xs ${
-                            cookedMeals.has(`${day.name}-${meal.id}`) 
-                              ? 'bg-green-600 hover:bg-green-700 text-white' 
-                              : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleCookedStatus(day.name, meal.id);
-                          }}
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          {cookedMeals.has(`${day.name}-${meal.id}`) ? 'Cooked!' : 'Mark Cooked'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className={`absolute top-1 left-1 h-6 w-6 p-0 z-10 ${
-                            favoriteMeals.has(meal.id) 
-                              ? 'text-red-500 hover:text-red-600' 
-                              : 'text-slate-400 hover:text-red-500'
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavoriteStatus(meal.id);
-                          }}
-                        >
-                          <Heart className={`h-4 w-4 ${favoriteMeals.has(meal.id) ? 'fill-current' : ''}`} />
-                        </Button>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant={cookedMeals.has(`${day.name}-${meal.id}`) ? "default" : "outline"}
+                        className={`w-full text-xs ${
+                          cookedMeals.has(`${day.name}-${meal.id}`) 
+                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                            : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCookedStatus(day.name, meal.id);
+                        }}
+                      >
+                        <Check className="h-3 w-3 mr-1" />
+                        {cookedMeals.has(`${day.name}-${meal.id}`) ? 'Cooked!' : 'Mark Cooked'}
+                      </Button>
                     </div>
                   ) : (
                     <div>

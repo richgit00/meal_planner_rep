@@ -7,7 +7,6 @@ import { Header } from "@/components/layout/header";
 import Home from "@/pages/home";
 import MealPlan from "@/pages/meal-plan";
 import ShoppingList from "@/pages/shopping-list";
-import Favourites from "@/pages/favourites";
 import Pantry from "@/pages/pantry";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
@@ -24,7 +23,6 @@ function App() {
                 <Route path="/" component={Home} />
                 <Route path="/meal-plan" component={MealPlan} />
                 <Route path="/shopping-list" component={ShoppingList} />
-                <Route path="/favourites" component={Favourites} />
                 <Route path="/pantry" component={Pantry} />
                 <Route path="/admin" component={Admin} />
                 <Route component={NotFound} />

@@ -27,13 +27,6 @@ export const pantryItems = pgTable("pantry_items", {
   category: text("category").notNull(),
 });
 
-export const favourites = pgTable("favourites", {
-  id: varchar("id").primaryKey().notNull(),
-  mealId: varchar("meal_id").notNull().references(() => meals.id),
-  userId: varchar("user_id").notNull(), // For future user system
-  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
-});
-
 export const insertMealSchema = createInsertSchema(meals).omit({
   id: true,
 });
@@ -46,11 +39,6 @@ export const insertPantryItemSchema = createInsertSchema(pantryItems).omit({
   id: true,
 });
 
-export const insertFavouriteSchema = createInsertSchema(favourites).omit({
-  id: true,
-  createdAt: true,
-});
-
 export type InsertMeal = z.infer<typeof insertMealSchema>;
 export type Meal = typeof meals.$inferSelect;
 
@@ -59,6 +47,3 @@ export type MealPlan = typeof mealPlans.$inferSelect;
 
 export type InsertPantryItem = z.infer<typeof insertPantryItemSchema>;
 export type PantryItem = typeof pantryItems.$inferSelect;
-
-export type InsertFavourite = z.infer<typeof insertFavouriteSchema>;
-export type Favourite = typeof favourites.$inferSelect;
