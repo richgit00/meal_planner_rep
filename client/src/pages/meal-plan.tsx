@@ -168,7 +168,7 @@ export default function MealPlan() {
     }
   };
 
-  
+
 
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
@@ -191,7 +191,7 @@ export default function MealPlan() {
   const toggleCookedStatus = (dayName: string, mealId: string) => {
     const cookedKey = `${dayName}-${mealId}`;
     const newCookedMeals = new Set(cookedMeals);
-    
+
     if (cookedMeals.has(cookedKey)) {
       newCookedMeals.delete(cookedKey);
       toast({ title: "Marked as not cooked" });
@@ -199,7 +199,7 @@ export default function MealPlan() {
       newCookedMeals.add(cookedKey);
       toast({ title: "Marked as cooked! 🍽️" });
     }
-    
+
     setCookedMeals(newCookedMeals);
   };
 
@@ -207,7 +207,7 @@ export default function MealPlan() {
   const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
   const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
 
-  const handleGenerateShoppingList = () => {
+  const handleGenerateShoppingList = async () => {
     // Check if there are any meals planned for the week
     const hasPlannedMeals = currentMeals.some(dayMeal => dayMeal.mealId);
 
@@ -219,6 +219,16 @@ export default function MealPlan() {
       });
       return;
     }
+
+    // Clear all caches and refetch meal plan data first
+    queryClient.removeQueries({ queryKey: ["/api/meal-plans"] });
+    queryClient.removeQueries({ queryKey: ["/api/shopping-list"] });
+
+    // Wait for fresh meal plan data before navigating
+    await queryClient.prefetchQuery({
+      queryKey: ["/api/meal-plans", currentWeek],
+      queryFn: () => fetch(`/api/meal-plans/${currentWeek}`).then(r => r.json())
+    });
 
     // Navigate to shopping list page with current week parameter
     setLocation(`/shopping-list?week=${currentWeek}`);
