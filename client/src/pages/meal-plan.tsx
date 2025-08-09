@@ -50,6 +50,7 @@ export default function MealPlan() {
   const [currentWeek, setCurrentWeek] = useState(() => formatWeekStart(new Date()));
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -108,75 +109,86 @@ export default function MealPlan() {
     },
   });
 
-  const currentMeals = useMemo(() => {
-    if (mealPlan?.meals) {
-      return mealPlan.meals;
-    }
-    return weekDays.map(day => ({ day: day.name, mealId: null }));
-  }, [mealPlan]);
-
   const handleAddMeal = (dayName: string) => {
+    if (isUpdating) return;
     setSelectedDay(dayName);
     setIsModalOpen(true);
   };
 
   const handleMealSelect = async (mealId: string) => {
-    if (!selectedDay) return;
+    if (!selectedDay || isUpdating) return;
 
-    const updatedMeals = weekDays.map(day => {
-      if (day.name === selectedDay) {
-        return { day: day.name, mealId };
-      }
-      const existing = currentMeals.find(m => m.day === day.name);
-      return { day: day.name, mealId: existing?.mealId || null };
-    });
+    setIsUpdating(true);
 
     try {
+      // Build complete meals array for all 7 days
+      const allMeals = weekDays.map(day => {
+        if (day.name === selectedDay) {
+          return { day: day.name, mealId };
+        }
+        
+        // Keep existing meal if it exists
+        const existingMeal = mealPlan?.meals?.find(m => m.day === day.name);
+        return { day: day.name, mealId: existingMeal?.mealId || null };
+      });
+
       if (mealPlan) {
         await updateMealPlanMutation.mutateAsync({
           id: mealPlan.id,
-          meals: updatedMeals,
+          meals: allMeals,
         });
       } else {
         await createMealPlanMutation.mutateAsync({
           weekStartDate: currentWeek,
-          meals: updatedMeals,
+          meals: allMeals,
         });
       }
+
       toast({ title: "Meal added successfully!" });
     } catch (error) {
+      console.error("Failed to add meal:", error);
       toast({ 
         title: "Failed to add meal", 
         variant: "destructive" 
       });
+    } finally {
+      setIsUpdating(false);
+      setIsModalOpen(false);
+      setSelectedDay(null);
     }
-
-    setIsModalOpen(false);
-    setSelectedDay(null);
   };
 
   const handleMealDelete = async (dayName: string) => {
-    if (!mealPlan) return;
+    if (!mealPlan || isUpdating) return;
 
-    const updatedMeals = weekDays.map(day => {
-      if (day.name === dayName) {
-        return { day: day.name, mealId: null };
-      }
-      const existing = currentMeals.find(m => m.day === day.name);
-      return { day: day.name, mealId: existing?.mealId || null };
-    });
+    setIsUpdating(true);
 
     try {
+      // Build complete meals array for all 7 days with the selected day cleared
+      const allMeals = weekDays.map(day => {
+        if (day.name === dayName) {
+          return { day: day.name, mealId: null };
+        }
+        
+        // Keep existing meal if it exists
+        const existingMeal = mealPlan.meals?.find(m => m.day === day.name);
+        return { day: day.name, mealId: existingMeal?.mealId || null };
+      });
+
       await updateMealPlanMutation.mutateAsync({
         id: mealPlan.id,
-        meals: updatedMeals,
+        meals: allMeals,
       });
+
       toast({ title: "Meal removed successfully!" });
     } catch (error) {
+      console.error("Failed to remove meal:", error);
       toast({ 
         title: "Failed to remove meal", 
         variant: "destructive" 
       });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -187,7 +199,7 @@ export default function MealPlan() {
   };
 
   const getMealForDay = (dayName: string): Meal | null => {
-    const dayMeal = currentMeals.find(m => m.day === dayName);
+    const dayMeal = mealPlan?.meals?.find(m => m.day === dayName);
     if (!dayMeal?.mealId) return null;
     return meals.find(m => m.id === dayMeal.mealId) || null;
   };
@@ -256,10 +268,11 @@ export default function MealPlan() {
                       variant="destructive"
                       size="sm"
                       onClick={() => handleMealDelete(day.name)}
+                      disabled={isUpdating}
                       className="w-full"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Remove
+                      {isUpdating ? "Removing..." : "Remove"}
                     </Button>
                   </div>
                 ) : (
@@ -269,10 +282,11 @@ export default function MealPlan() {
                     </div>
                     <Button
                       onClick={() => handleAddMeal(day.name)}
+                      disabled={isUpdating}
                       className="w-full"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Meal
+                      {isUpdating ? "Adding..." : "Add Meal"}
                     </Button>
                   </div>
                 )}
@@ -285,8 +299,10 @@ export default function MealPlan() {
       <MealSelectionModal
         isOpen={isModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
-          setSelectedDay(null);
+          if (!isUpdating) {
+            setIsModalOpen(false);
+            setSelectedDay(null);
+          }
         }}
         onSelectMeal={handleMealSelect}
         meals={meals}
