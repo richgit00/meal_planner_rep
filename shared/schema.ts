@@ -12,6 +12,7 @@ export const meals = pgTable("meals", {
   servings: integer("servings").notNull(),
   image: text("image").notNull(),
   ingredients: json("ingredients").$type<Array<{ name: string; amount: string; category: 'fresh' | 'pantry' }>>().notNull(),
+  utensils: json("utensils").$type<Array<string>>().notNull(),
   instructions: json("instructions").$type<Array<string>>().notNull(),
 });
 

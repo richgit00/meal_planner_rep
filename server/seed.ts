@@ -17,6 +17,7 @@ const initialMeals = [
       { name: "Salt", amount: "1 tsp", category: "pantry" as const },
       { name: "Black pepper", amount: "1/2 tsp", category: "pantry" as const }
     ],
+    utensils: ["Large saucepan", "Frying pan"],
     instructions: [
       "Preheat grill to medium-high heat and brush chicken with olive oil.",
       "Season chicken with salt and pepper on both sides.",
@@ -40,6 +41,7 @@ const initialMeals = [
       { name: "Garlic", amount: "4 cloves", category: "fresh" as const },
       { name: "Olive oil", amount: "3 tbsp", category: "pantry" as const }
     ],
+    utensils: ["Large saucepan", "Frying pan"],
     instructions: [
       "Cook pasta according to package directions.",
       "Heat olive oil in a large pan and sauté minced garlic.",
@@ -63,6 +65,7 @@ const initialMeals = [
       { name: "Ginger", amount: "1 tbsp", category: "fresh" as const },
       { name: "Vegetable oil", amount: "2 tbsp", category: "pantry" as const }
     ],
+    utensils: ["Large saucepan", "Frying pan"],
     instructions: [
       "Slice beef thinly against the grain.",
       "Heat oil in a wok or large skillet over high heat.",
@@ -86,6 +89,7 @@ const initialMeals = [
       { name: "Butter", amount: "3 tbsp", category: "fresh" as const },
       { name: "Dill", amount: "2 tbsp", category: "fresh" as const }
     ],
+    utensils: ["Large saucepan", "Frying pan"],
     instructions: [
       "Cook rice according to package directions.",
       "Season salmon with salt and pepper.",
@@ -109,6 +113,7 @@ const initialMeals = [
       { name: "Onion", amount: "1 large", category: "fresh" as const },
       { name: "Garlic", amount: "3 cloves", category: "fresh" as const }
     ],
+    utensils: ["Large saucepan", "Frying pan"],
     instructions: [
       "Sauté diced onion and garlic until fragrant.",
       "Add curry powder and cook for 1 minute.",
