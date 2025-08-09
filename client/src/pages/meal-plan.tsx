@@ -147,19 +147,31 @@ export default function MealPlan() {
     setShowMealModal(true);
   };
 
-  const handleMealSelect = (meal: Meal) => {
+  const handleMealSelect = async (meal: Meal) => {
     if (!selectedDay) return;
 
-    const updatedMeals = currentMeals.map(dayMeal =>
-      dayMeal.day === selectedDay ? { ...dayMeal, mealId: meal.id } : dayMeal
-    );
+    try {
+      const updatedMeals = currentMeals.map(dayMeal =>
+        dayMeal.day === selectedDay ? { ...dayMeal, mealId: meal.id } : dayMeal
+      );
 
-    if (mealPlan) {
-      updateMealPlanMutation.mutate({ id: mealPlan.id, meals: updatedMeals });
-    } else {
-      createMealPlanMutation.mutate({
-        weekStartDate: currentWeek,
-        meals: updatedMeals,
+      if (mealPlan) {
+        await updateMealPlanMutation.mutateAsync({ id: mealPlan.id, meals: updatedMeals });
+      } else {
+        await createMealPlanMutation.mutateAsync({
+          weekStartDate: currentWeek,
+          meals: updatedMeals,
+        });
+      }
+      
+      setShowMealModal(false);
+      setSelectedDay(null);
+    } catch (error) {
+      console.error('Error adding meal:', error);
+      toast({ 
+        title: "Failed to add meal", 
+        description: "Please try again",
+        variant: "destructive" 
       });
     }
   };
@@ -172,17 +184,28 @@ export default function MealPlan() {
     }
   };
 
-  const handleMealDelete = (dayName: string) => {
-    const updatedMeals = currentMeals.map(dayMeal =>
-      dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
-    );
+  const handleMealDelete = async (dayName: string) => {
+    try {
+      const updatedMeals = currentMeals.map(dayMeal =>
+        dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
+      );
 
-    if (mealPlan) {
-      updateMealPlanMutation.mutate({ id: mealPlan.id, meals: updatedMeals });
-    } else {
-      createMealPlanMutation.mutate({
-        weekStartDate: currentWeek,
-        meals: updatedMeals,
+      if (mealPlan) {
+        await updateMealPlanMutation.mutateAsync({ id: mealPlan.id, meals: updatedMeals });
+      } else {
+        await createMealPlanMutation.mutateAsync({
+          weekStartDate: currentWeek,
+          meals: updatedMeals,
+        });
+      }
+      
+      toast({ title: "Meal removed successfully!" });
+    } catch (error) {
+      console.error('Error removing meal:', error);
+      toast({ 
+        title: "Failed to remove meal", 
+        description: "Please try again",
+        variant: "destructive" 
       });
     }
   };
