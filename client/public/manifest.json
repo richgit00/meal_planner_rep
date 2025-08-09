@@ -6,9 +6,13 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#34a853",
   "orientation": "portrait-primary",
   "scope": "/",
+  "id": "/",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "/icon-192.png",
