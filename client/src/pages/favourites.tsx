@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Heart, Clock, Users } from "lucide-react";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal";
+import { queryClient } from "@/lib/queryClient";
 import { type Meal } from "@shared/schema";
 
 export default function Favourites() {
@@ -21,10 +22,13 @@ export default function Favourites() {
 
   const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
     queryKey: ["/api/favourites"],
-    onSuccess: (data) => {
-      setFavouriteMeals(new Set(data.map(f => f.mealId)));
-    }
   });
+
+  React.useEffect(() => {
+    if (favouritesData) {
+      setFavouriteMeals(new Set(favouritesData.map(f => f.mealId)));
+    }
+  }, [favouritesData]);
 
   const favouriteMealsList = meals.filter(meal => favouriteMeals.has(meal.id));
 
@@ -46,6 +50,7 @@ export default function Favourites() {
         if (response.ok) {
           newFavouriteMeals.delete(mealId);
           setFavouriteMeals(newFavouriteMeals);
+          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
         }
       } else {
         // Add to favourites
@@ -58,6 +63,7 @@ export default function Favourites() {
         if (response.ok) {
           newFavouriteMeals.add(mealId);
           setFavouriteMeals(newFavouriteMeals);
+          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
         }
       }
     } catch (error) {

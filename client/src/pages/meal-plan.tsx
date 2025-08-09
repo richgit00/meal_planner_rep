@@ -91,10 +91,13 @@ export default function MealPlan() {
 
   const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
     queryKey: ["/api/favourites"],
-    onSuccess: (data) => {
-      setFavoriteMeals(new Set(data.map(f => f.mealId)));
-    }
   });
+
+  React.useEffect(() => {
+    if (favouritesData) {
+      setFavoriteMeals(new Set(favouritesData.map(f => f.mealId)));
+    }
+  }, [favouritesData]);
 
   const { data: pantryItems = [], isLoading: pantryLoading } = useQuery<PantryItem[]>({
     queryKey: ["/api/pantry-items"],
