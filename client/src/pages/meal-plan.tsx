@@ -147,58 +147,56 @@ export default function MealPlan() {
   const weekDays = getWeekDates(currentWeek);
   const currentMeals = mealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
 
-  const handleDayClick = (dayName: string) => {
+  const handleAddMealClick = (dayName: string) => {
     setSelectedDay(dayName);
     setShowMealModal(true);
   };
 
   const handleMealSelect = async (meal: Meal) => {
-    if (!selectedDay || isUpdating) return;
+    if (!selectedDay) return;
 
-    const dayToUpdate = selectedDay;
     setIsUpdating(true);
+    setShowMealModal(false);
+    setSelectedDay(null);
+
+    const updatedMeals = weekDays.map(day => ({
+      day: day.name,
+      mealId: day.name === selectedDay ? meal.id : 
+              mealPlan?.meals.find(m => m.day === day.name)?.mealId || null
+    }));
 
     try {
-      const latestMeals = mealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
-
-      const updatedMeals = latestMeals.map(dayMeal =>
-        dayMeal.day === dayToUpdate ? { ...dayMeal, mealId: meal.id } : dayMeal
-      );
-
       if (mealPlan) {
-        await updateMealPlanMutation.mutateAsync({ id: mealPlan.id, meals: updatedMeals });
+        await updateMealPlanMutation.mutateAsync({ 
+          id: mealPlan.id, 
+          meals: updatedMeals 
+        });
       } else {
         await createMealPlanMutation.mutateAsync({
           weekStartDate: currentWeek,
-          meals: updatedMeals,
+          meals: updatedMeals
         });
       }
-
-      // Only clear modal state after successful database update
-      setShowMealModal(false);
-      setSelectedDay(null);
+      toast({ title: "Meal added successfully!" });
     } catch (error) {
-      console.error('Error adding meal:', error);
-      toast({ 
-        title: "Failed to add meal", 
-        description: "Please try again",
-        variant: "destructive" 
-      });
+      toast({ title: "Failed to add meal", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleMealClick = (mealId: string) => {
-    const meal = meals.find(m => m.id === mealId);
-    if (meal) {
-      setSelectedMeal(meal);
-      setShowRecipeModal(true);
+    if (meals && meals.length > 0) {
+      const meal = meals.find(m => m.id === mealId);
+      if (meal) {
+        setSelectedMeal(meal);
+        setShowRecipeModal(true);
+      }
     }
   };
 
   const handleMealDelete = async (dayName: string) => {
-    if (isUpdating || !mealPlan) return;
+    if (!mealPlan) return;
 
     setIsUpdating(true);
 
@@ -206,23 +204,17 @@ export default function MealPlan() {
       dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
     );
 
-    updateMealPlanMutation.mutate(
-      { id: mealPlan.id, meals: updatedMeals },
-      {
-        onSuccess: () => {
-          toast({ title: "Meal removed successfully!" });
-        },
-        onError: () => {
-          toast({ 
-            title: "Failed to remove meal", 
-            variant: "destructive" 
-          });
-        },
-        onSettled: () => {
-          setIsUpdating(false);
-        }
-      }
-    );
+    try {
+      await updateMealPlanMutation.mutateAsync({ 
+        id: mealPlan.id, 
+        meals: updatedMeals 
+      });
+      toast({ title: "Meal removed successfully!" });
+    } catch (error) {
+      toast({ title: "Failed to remove meal", variant: "destructive" });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
 
@@ -331,7 +323,7 @@ export default function MealPlan() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+        <div className="flex flex-col sm:flex-flex-row items-start sm:items-center gap-2 sm:gap-4">
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={goToPreviousWeek} disabled={isPreviousDisabled} size="sm">
               <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
@@ -363,7 +355,7 @@ export default function MealPlan() {
                 </div>
                 <div
                   className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-blue-50 transition-colors duration-200 min-h-[120px] flex flex-col justify-center relative"
-                  onClick={() => handleDayClick(day.name)}
+                  onClick={() => handleAddMealClick(day.name)}
                 >
                   {meal ? (
                     <div className="space-y-2 relative">
