@@ -159,11 +159,11 @@ const initialPantryItems = [
 export async function seedDatabase() {
   try {
     console.log("Seeding database with initial data...");
-    
+
     // Check if data already exists
     const existingMeals = await db.select().from(meals);
     const existingPantryItems = await db.select().from(pantryItems);
-    
+
     if (existingMeals.length === 0) {
       console.log("Adding initial meals...");
       await db.insert(meals).values(initialMeals);
@@ -171,7 +171,7 @@ export async function seedDatabase() {
     } else {
       console.log(`Database already has ${existingMeals.length} meals, skipping meal seeding`);
     }
-    
+
     if (existingPantryItems.length === 0) {
       console.log("Adding initial pantry items...");
       await db.insert(pantryItems).values(initialPantryItems);
@@ -179,7 +179,7 @@ export async function seedDatabase() {
     } else {
       console.log(`Database already has ${existingPantryItems.length} pantry items, skipping pantry seeding`);
     }
-    
+
     console.log("Database seeding completed!");
   } catch (error) {
     console.error("Error seeding database:", error);
