@@ -79,6 +79,7 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
       toast({ title: "Meal created successfully!" });
       handleCloseDialog();
     },
@@ -95,6 +96,7 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
       toast({ title: "Meal updated successfully!" });
       handleCloseDialog();
     },
@@ -115,6 +117,8 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
       toast({ title: "Meal deleted successfully!" });
     },
     onError: (error: any) => {
@@ -133,6 +137,7 @@ export default function Admin() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shopping-list"] });
       toast({ title: `Successfully imported ${data.imported} out of ${data.total} meals!` });
       setBulkImportText("");
     },
