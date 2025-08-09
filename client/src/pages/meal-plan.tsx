@@ -115,8 +115,10 @@ export default function MealPlan() {
       console.log("Creating meal plan:", newMealPlan);
       return await apiRequest("POST", "/api/meal-plans", newMealPlan);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(["/api/meal-plans", currentWeek], data);
       queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      queryClient.refetchQueries({ queryKey: ["/api/meal-plans", currentWeek] });
       toast({ title: "Meal plan saved successfully!" });
     },
     onError: (error: any) => {
@@ -130,8 +132,10 @@ export default function MealPlan() {
       console.log("Updating meal plan:", { id, updates });
       return await apiRequest("PUT", `/api/meal-plans/${id}`, updates);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      queryClient.setQueryData(["/api/meal-plans", currentWeek], data);
       queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      queryClient.refetchQueries({ queryKey: ["/api/meal-plans", currentWeek] });
       toast({ title: "Meal plan updated successfully!" });
     },
     onError: (error: any) => {
