@@ -8,7 +8,7 @@ import { MealSelectionModal } from "@/components/meal-selection-modal";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { type Meal, type MealPlan } from "@shared/schema";
+import { type Meal, type MealPlan, type PantryItem } from "@shared/schema";
 
 // Helper function to get week dates from a start date
 const getWeekDates = (weekStartDate: string) => {
@@ -152,24 +152,29 @@ export default function MealPlan() {
     if (!selectedDay || isUpdating) return;
 
     const dayToUpdate = selectedDay;
+
+    // Clear modal and selection state immediately to prevent duplicate calls
+    setShowMealModal(false);
+    setSelectedDay(null);
     setIsUpdating(true);
 
     try {
-      const updatedMeals = currentMeals.map(dayMeal =>
+      // Use current meal plan data directly from query to avoid stale state
+      const latestMealPlan = mealPlan;
+      const latestMeals = latestMealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
+
+      const updatedMeals = latestMeals.map(dayMeal =>
         dayMeal.day === dayToUpdate ? { ...dayMeal, mealId: meal.id } : dayMeal
       );
 
-      if (mealPlan) {
-        await updateMealPlanMutation.mutateAsync({ id: mealPlan.id, meals: updatedMeals });
+      if (latestMealPlan) {
+        await updateMealPlanMutation.mutateAsync({ id: latestMealPlan.id, meals: updatedMeals });
       } else {
         await createMealPlanMutation.mutateAsync({
           weekStartDate: currentWeek,
           meals: updatedMeals,
         });
       }
-
-      setShowMealModal(false);
-      setSelectedDay(null);
     } catch (error) {
       console.error('Error adding meal:', error);
       toast({ 
