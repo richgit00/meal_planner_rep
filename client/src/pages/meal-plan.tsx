@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, ShoppingCart, Plus, X, Check, Heart } from "lucide-react";
@@ -91,10 +91,14 @@ export default function MealPlan() {
 
   const { data: favouritesData = [] } = useQuery<Array<{ mealId: string }>>({
     queryKey: ["/api/favourites"],
-    onSuccess: (data) => {
-      setFavoriteMeals(new Set(data.map(f => f.mealId)));
-    }
   });
+
+  // Update favourite meals state when data changes
+  React.useEffect(() => {
+    if (favouritesData) {
+      setFavoriteMeals(new Set(favouritesData.map(f => f.mealId)));
+    }
+  }, [favouritesData]);
 
   const { data: pantryItems = [], isLoading: pantryLoading } = useQuery<PantryItem[]>({
     queryKey: ["/api/pantry-items"],
@@ -219,8 +223,6 @@ export default function MealPlan() {
   };
 
   const toggleFavoriteStatus = async (mealId: string) => {
-    const newFavoriteMeals = new Set(favoriteMeals);
-
     try {
       if (favoriteMeals.has(mealId)) {
         // Remove from favourites
@@ -229,8 +231,8 @@ export default function MealPlan() {
         });
 
         if (response.ok) {
-          newFavoriteMeals.delete(mealId);
-          setFavoriteMeals(newFavoriteMeals);
+          // Invalidate and refetch favourites
+          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
           toast({ title: "Removed from favourites" });
         }
       } else {
@@ -242,8 +244,8 @@ export default function MealPlan() {
         });
 
         if (response.ok) {
-          newFavoriteMeals.add(mealId);
-          setFavoriteMeals(newFavoriteMeals);
+          // Invalidate and refetch favourites
+          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
           toast({ title: "Added to favourites" });
         }
       }
