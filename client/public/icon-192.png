@@ -1,12 +1,2 @@
 
-<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="192" height="192" rx="24" fill="#4CAF50"/>
-<circle cx="96" cy="70" r="25" fill="#ffffff"/>
-<rect x="76" y="100" width="40" height="8" rx="4" fill="#ffffff"/>
-<rect x="71" y="115" width="50" height="8" rx="4" fill="#ffffff"/>
-<rect x="81" y="130" width="30" height="8" rx="4" fill="#ffffff"/>
-<path d="M96 45 L108 57 L96 69 L84 57 Z" fill="#2E7D32"/>
-<circle cx="96" cy="160" r="8" fill="#FFC107"/>
-<circle cx="76" cy="160" r="4" fill="#FF9800"/>
-<circle cx="116" cy="160" r="4" fill="#FF5722"/>
-</svg>
+data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiBmaWxsPSIjMDAwMDAwIi8+Cjx0ZXh0IHg9Ijk2IiB5PSIxMDQiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0OCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TVA8L3RleHQ+Cjwvc3ZnPgo=

@@ -1,53 +1,27 @@
 
 {
-  "name": "Weekly Meal Planner",
-  "short_name": "MealPlan",
-  "description": "Plan your weekly meals, generate shopping lists, and manage your pantry efficiently",
+  "name": "Weekly Meal Plan",
+  "short_name": "Meal Plan",
+  "description": "Plan your weekly meals and manage your pantry",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
   "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-512.png", 
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     }
   ],
-  "categories": ["food", "lifestyle", "productivity", "utilities"],
-  "lang": "en",
-  "dir": "ltr",
-  "prefer_related_applications": false,
-  "shortcuts": [
-    {
-      "name": "Meal Plan",
-      "short_name": "Plan",
-      "description": "View and edit your weekly meal plan",
-      "url": "/",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Shopping List",
-      "short_name": "Shop",
-      "description": "Generate and view shopping lists",
-      "url": "/shopping-list",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Pantry",
-      "short_name": "Pantry",
-      "description": "Manage your pantry inventory",
-      "url": "/pantry",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
-    }
-  ]
+  "categories": ["food", "lifestyle", "productivity"],
+  "lang": "en-AU"
 }
