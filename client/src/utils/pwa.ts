@@ -5,18 +5,6 @@ export const registerServiceWorker = () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           console.log('SW registered: ', registration);
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('New content is available; please refresh.');
-                }
-              });
-            }
-          });
         })
         .catch((registrationError) => {
           console.log('SW registration failed: ', registrationError);
@@ -29,57 +17,54 @@ export const checkForPWAInstall = () => {
   let deferredPrompt: any;
 
   window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('beforeinstallprompt event fired');
-    // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
-    // Stash the event so it can be triggered later
     deferredPrompt = e;
-    
-    // Show install button/banner
     showInstallPromotion();
   });
 
-  // For iOS Safari
   const isIos = () => {
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    return /iphone|ipad|ipod/.test(userAgent);
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
   };
 
   const isInStandaloneMode = () => {
-    return ('standalone' in window.navigator) && (window.navigator as any).standalone;
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
+           (window.navigator as any).standalone === true;
   };
 
   const showInstallPromotion = () => {
-    console.log('PWA install available');
-    
-    // Create a simple install banner
     if (!document.getElementById('pwa-install-banner')) {
       const banner = document.createElement('div');
       banner.id = 'pwa-install-banner';
       banner.style.cssText = `
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: #000;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        background: #34a853;
         color: white;
-        padding: 10px;
+        padding: 15px;
+        border-radius: 8px;
         text-align: center;
         z-index: 9999;
         font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       `;
       banner.innerHTML = `
-        <span>Install this app for a better experience!</span>
-        <button id="install-button" style="margin-left: 10px; padding: 5px 10px; background: white; color: black; border: none; border-radius: 3px; cursor: pointer;">Install</button>
-        <button id="dismiss-button" style="margin-left: 5px; padding: 5px 10px; background: transparent; color: white; border: 1px solid white; border-radius: 3px; cursor: pointer;">×</button>
+        <div style="margin-bottom: 10px;">Install Meal Plan for a better experience!</div>
+        <button id="install-button" style="margin-right: 10px; padding: 8px 16px; background: white; color: #34a853; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Install</button>
+        <button id="dismiss-button" style="padding: 8px 16px; background: transparent; color: white; border: 1px solid white; border-radius: 4px; cursor: pointer;">Later</button>
       `;
       
       document.body.appendChild(banner);
       
-      // Add click handlers
       document.getElementById('install-button')?.addEventListener('click', () => {
-        promptInstall();
-        banner.remove();
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult: any) => {
+            deferredPrompt = null;
+            banner.remove();
+          });
+        }
       });
       
       document.getElementById('dismiss-button')?.addEventListener('click', () => {
@@ -88,21 +73,7 @@ export const checkForPWAInstall = () => {
     }
   };
 
-  const promptInstall = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-        } else {
-          console.log('User dismissed the install prompt');
-        }
-        deferredPrompt = null;
-      });
-    }
-  };
-
-  // Show iOS install instructions
+  // iOS install instructions
   if (isIos() && !isInStandaloneMode()) {
     setTimeout(() => {
       if (!document.getElementById('ios-install-banner')) {
@@ -110,26 +81,24 @@ export const checkForPWAInstall = () => {
         banner.id = 'ios-install-banner';
         banner.style.cssText = `
           position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
+          bottom: 20px;
+          left: 20px;
+          right: 20px;
           background: #007AFF;
           color: white;
           padding: 15px;
+          border-radius: 8px;
           text-align: center;
           z-index: 9999;
           font-size: 14px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         `;
         banner.innerHTML = `
-          <div>To install this app, tap <strong>Share</strong> and then <strong>Add to Home Screen</strong></div>
-          <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 10px; background: white; color: #007AFF; border: none; border-radius: 3px;">Got it</button>
+          <div style="margin-bottom: 10px;">To install: Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></div>
+          <button onclick="this.parentElement.remove()" style="padding: 8px 16px; background: white; color: #007AFF; border: none; border-radius: 4px; font-weight: bold;">Got it</button>
         `;
         document.body.appendChild(banner);
       }
-    }, 3000);
+    }, 2000);
   }
-
-  return {
-    promptInstall
-  };
 };
