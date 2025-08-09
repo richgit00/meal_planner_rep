@@ -150,14 +150,17 @@ export default function MealPlan() {
 
   const handleMealSelect = async (meal: Meal) => {
     if (!selectedDay || isUpdating) return;
-    
-    setIsUpdating(true);
+
+    const dayToUpdate = selectedDay;
+
+    // Close modal and clear state immediately to prevent duplicate calls
     setShowMealModal(false);
     setSelectedDay(null);
+    setIsUpdating(true);
 
     try {
       const updatedMeals = currentMeals.map(dayMeal =>
-        dayMeal.day === selectedDay ? { ...dayMeal, mealId: meal.id } : dayMeal
+        dayMeal.day === dayToUpdate ? { ...dayMeal, mealId: meal.id } : dayMeal
       );
 
       if (mealPlan) {
@@ -190,7 +193,7 @@ export default function MealPlan() {
 
   const handleMealDelete = async (dayName: string) => {
     if (isUpdating) return;
-    
+
     setIsUpdating(true);
 
     try {
@@ -206,7 +209,7 @@ export default function MealPlan() {
           meals: updatedMeals,
         });
       }
-      
+
       toast({ title: "Meal removed successfully!" });
     } catch (error) {
       console.error('Error removing meal:', error);
