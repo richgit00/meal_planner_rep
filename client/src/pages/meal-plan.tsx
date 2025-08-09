@@ -152,10 +152,6 @@ export default function MealPlan() {
     if (!selectedDay || isUpdating) return;
 
     const dayToUpdate = selectedDay;
-
-    // Close modal and clear state immediately to prevent duplicate calls
-    setShowMealModal(false);
-    setSelectedDay(null);
     setIsUpdating(true);
 
     try {
@@ -171,6 +167,9 @@ export default function MealPlan() {
           meals: updatedMeals,
         });
       }
+
+      setShowMealModal(false);
+      setSelectedDay(null);
     } catch (error) {
       console.error('Error adding meal:', error);
       toast({ 
