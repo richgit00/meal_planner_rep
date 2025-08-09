@@ -156,29 +156,27 @@ export default function MealPlan() {
     if (!selectedDay || isUpdating) return;
 
     const dayToUpdate = selectedDay;
-
-    // Clear modal and selection state immediately to prevent duplicate calls
-    setShowMealModal(false);
-    setSelectedDay(null);
     setIsUpdating(true);
 
     try {
-      // Use current meal plan data directly from query to avoid stale state
-      const latestMealPlan = mealPlan;
-      const latestMeals = latestMealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
+      const latestMeals = mealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
 
       const updatedMeals = latestMeals.map(dayMeal =>
         dayMeal.day === dayToUpdate ? { ...dayMeal, mealId: meal.id } : dayMeal
       );
 
-      if (latestMealPlan) {
-        await updateMealPlanMutation.mutateAsync({ id: latestMealPlan.id, meals: updatedMeals });
+      if (mealPlan) {
+        await updateMealPlanMutation.mutateAsync({ id: mealPlan.id, meals: updatedMeals });
       } else {
         await createMealPlanMutation.mutateAsync({
           weekStartDate: currentWeek,
           meals: updatedMeals,
         });
       }
+
+      // Only clear modal state after successful database update
+      setShowMealModal(false);
+      setSelectedDay(null);
     } catch (error) {
       console.error('Error adding meal:', error);
       toast({ 
