@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
@@ -22,8 +23,6 @@ const getWeekDates = (weekStartDate: string) => {
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    // Adjust for Monday start
-    const dayIndex = (date.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
     const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][i];
 
     days.push({
@@ -66,7 +65,7 @@ const addWeeks = (dateString: string, weeks: number) => {
 const getCurrentWeekMonday = () => {
   const today = new Date();
   const dayOfWeek = today.getDay();
-  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
+  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
   const monday = new Date(today.setDate(diff));
   return monday.toISOString().split('T')[0];
 };
@@ -86,7 +85,7 @@ export default function MealPlan() {
   });
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
+  const { data: meals = [] } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
   });
 
@@ -94,32 +93,24 @@ export default function MealPlan() {
     queryKey: ["/api/favourites"],
   });
 
-  // Update favourite meals state when data changes
   React.useEffect(() => {
     if (favouritesData) {
       setFavoriteMeals(new Set(favouritesData.map(f => f.mealId)));
     }
   }, [favouritesData]);
 
-  const { data: pantryItems = [], isLoading: pantryLoading } = useQuery<PantryItem[]>({
-    queryKey: ["/api/pantry-items"],
-  });
-
-  const { data: mealPlan } = useQuery<MealPlan>({
+  const { data: mealPlan, refetch: refetchMealPlan } = useQuery<MealPlan>({
     queryKey: ["/api/meal-plans", currentWeek],
     retry: false,
   });
 
   const createMealPlanMutation = useMutation({
     mutationFn: async (newMealPlan: { weekStartDate: string; meals: Array<{ day: string; mealId: string | null }> }) => {
-      console.log("Creating meal plan:", newMealPlan);
       return await apiRequest("POST", "/api/meal-plans", newMealPlan);
     },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["/api/meal-plans", currentWeek], data);
-      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
-      queryClient.refetchQueries({ queryKey: ["/api/meal-plans", currentWeek] });
-      toast({ title: "Meal plan saved successfully!" });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans", currentWeek] });
+      refetchMealPlan();
     },
     onError: (error: any) => {
       console.error("Meal plan creation failed:", error);
@@ -129,14 +120,11 @@ export default function MealPlan() {
 
   const updateMealPlanMutation = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; meals: Array<{ day: string; mealId: string | null }> }) => {
-      console.log("Updating meal plan:", { id, updates });
       return await apiRequest("PUT", `/api/meal-plans/${id}`, updates);
     },
-    onSuccess: (data) => {
-      queryClient.setQueryData(["/api/meal-plans", currentWeek], data);
-      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
-      queryClient.refetchQueries({ queryKey: ["/api/meal-plans", currentWeek] });
-      toast({ title: "Meal plan updated successfully!" });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans", currentWeek] });
+      refetchMealPlan();
     },
     onError: (error: any) => {
       console.error("Meal plan update failed:", error);
@@ -145,7 +133,13 @@ export default function MealPlan() {
   });
 
   const weekDays = getWeekDates(currentWeek);
-  const currentMeals = mealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
+
+  const getMealForDay = (dayName: string) => {
+    if (!mealPlan?.meals) return null;
+    const dayMeal = mealPlan.meals.find(m => m.day === dayName);
+    if (!dayMeal?.mealId) return null;
+    return meals.find(m => m.id === dayMeal.mealId) || null;
+  };
 
   const handleAddMealClick = (dayName: string) => {
     setSelectedDay(dayName);
@@ -153,83 +147,84 @@ export default function MealPlan() {
   };
 
   const handleMealSelect = async (meal: Meal) => {
-    if (!selectedDay) return;
+    if (!selectedDay || isUpdating) return;
 
     setIsUpdating(true);
     setShowMealModal(false);
-    setSelectedDay(null);
-
-    const updatedMeals = weekDays.map(day => ({
-      day: day.name,
-      mealId: day.name === selectedDay ? meal.id : 
-              mealPlan?.meals.find(m => m.day === day.name)?.mealId || null
-    }));
 
     try {
+      // Build complete meals array for all 7 days
+      const completeWeekMeals = weekDays.map(day => ({
+        day: day.name,
+        mealId: day.name === selectedDay ? meal.id : (
+          mealPlan?.meals?.find(m => m.day === day.name)?.mealId || null
+        )
+      }));
+
       if (mealPlan) {
         await updateMealPlanMutation.mutateAsync({ 
           id: mealPlan.id, 
-          meals: updatedMeals 
+          meals: completeWeekMeals 
         });
       } else {
         await createMealPlanMutation.mutateAsync({
           weekStartDate: currentWeek,
-          meals: updatedMeals
+          meals: completeWeekMeals
         });
       }
+      
       toast({ title: "Meal added successfully!" });
     } catch (error) {
+      console.error("Error adding meal:", error);
       toast({ title: "Failed to add meal", variant: "destructive" });
     } finally {
       setIsUpdating(false);
+      setSelectedDay(null);
     }
   };
 
   const handleMealClick = (mealId: string) => {
-    if (meals && meals.length > 0) {
-      const meal = meals.find(m => m.id === mealId);
-      if (meal) {
-        setSelectedMeal(meal);
-        setShowRecipeModal(true);
-      }
+    const meal = meals.find(m => m.id === mealId);
+    if (meal) {
+      setSelectedMeal(meal);
+      setShowRecipeModal(true);
     }
   };
 
   const handleMealDelete = async (dayName: string) => {
-    if (!mealPlan) return;
+    if (!mealPlan || isUpdating) return;
+
+    setIsUpdating(true);
 
     try {
-      setIsUpdating(true);
-
-      const updatedMeals = weekDays.map(day => {
-        if (day.name === dayName) {
-          return { day: day.name, mealId: null };
-        }
-        const existing = mealPlan.meals.find(m => m.day === day.name);
-        return { day: day.name, mealId: existing?.mealId || null };
-      });
+      // Build complete meals array with the specified day set to null
+      const completeWeekMeals = weekDays.map(day => ({
+        day: day.name,
+        mealId: day.name === dayName ? null : (
+          mealPlan.meals?.find(m => m.day === day.name)?.mealId || null
+        )
+      }));
 
       await updateMealPlanMutation.mutateAsync({ 
         id: mealPlan.id, 
-        meals: updatedMeals 
+        meals: completeWeekMeals 
       });
 
       toast({ title: "Meal removed successfully!" });
     } catch (error) {
+      console.error("Error removing meal:", error);
       toast({ title: "Failed to remove meal", variant: "destructive" });
     } finally {
       setIsUpdating(false);
     }
   };
 
-
-
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
     const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
     if (newWeek >= earliestWeek) {
       setCurrentWeek(newWeek);
-      setCookedMeals(new Set()); // Reset cooked status when changing weeks
+      setCookedMeals(new Set());
     }
   };
 
@@ -238,7 +233,7 @@ export default function MealPlan() {
     const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
     if (newWeek <= latestWeek) {
       setCurrentWeek(newWeek);
-      setCookedMeals(new Set()); // Reset cooked status when changing weeks
+      setCookedMeals(new Set());
     }
   };
 
@@ -262,12 +257,10 @@ export default function MealPlan() {
     try {
       let response;
       if (isFavorite) {
-        // Remove from favourites
         response = await fetch(`/api/favourites/${mealId}?userId=default-user`, {
           method: 'DELETE',
         });
       } else {
-        // Add to favourites
         response = await fetch('/api/favourites', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -276,7 +269,6 @@ export default function MealPlan() {
       }
 
       if (response.ok) {
-        // Update local state immediately for better UX
         setFavoriteMeals(prev => {
           const newSet = new Set(prev);
           if (isFavorite) {
@@ -288,9 +280,7 @@ export default function MealPlan() {
           return newSet;
         });
 
-        // Invalidate favorites cache across all pages and force refetch
         queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
         queryClient.refetchQueries({ queryKey: ["/api/favourites"] });
 
         toast({
@@ -303,13 +293,11 @@ export default function MealPlan() {
     }
   };
 
-  // Check if navigation buttons should be disabled
   const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
   const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
 
   const handleGenerateShoppingList = () => {
-    // Check if there are any meals planned for the week
-    const hasPlannedMeals = currentMeals.some(dayMeal => dayMeal.mealId);
+    const hasPlannedMeals = mealPlan?.meals?.some(dayMeal => dayMeal.mealId);
 
     if (!hasPlannedMeals) {
       toast({ 
@@ -320,7 +308,6 @@ export default function MealPlan() {
       return;
     }
 
-    // Navigate to shopping list page with current week parameter
     setLocation(`/shopping-list?week=${currentWeek}`);
   };
 
@@ -328,7 +315,7 @@ export default function MealPlan() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
         <h2 className="text-2xl font-bold text-slate-800">Weekly Meal Plan</h2>
-        <div className="flex flex-col sm:flex-flex-row items-start sm:items-center gap-2 sm:gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <div className="flex items-center space-x-2">
             <Button variant="outline" onClick={goToPreviousWeek} disabled={isPreviousDisabled} size="sm">
               <ChevronLeft className="h-4 w-4 mr-1 sm:mr-2" />
@@ -345,11 +332,9 @@ export default function MealPlan() {
         </div>
       </div>
 
-      {/* Weekly Calendar Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 mb-8">
         {weekDays.map((day) => {
-          const dayMeal = currentMeals.find(m => m.day === day.name);
-          const meal = dayMeal?.mealId ? meals.find(m => m.id === dayMeal.mealId) : null;
+          const meal = getMealForDay(day.name);
 
           return (
             <Card key={day.name}>
@@ -372,6 +357,7 @@ export default function MealPlan() {
                           e.stopPropagation();
                           handleMealDelete(day.name);
                         }}
+                        disabled={isUpdating}
                       >
                         <X className="h-4 w-4 sm:h-3 sm:w-3" />
                       </Button>
@@ -443,7 +429,6 @@ export default function MealPlan() {
         })}
       </div>
 
-      {/* Action Buttons */}
       <div className="flex justify-center">
         <Button 
           variant="outline" 
