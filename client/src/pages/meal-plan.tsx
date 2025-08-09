@@ -223,31 +223,44 @@ export default function MealPlan() {
   };
 
   const toggleFavoriteStatus = async (mealId: string) => {
+    const isFavorite = favoriteMeals.has(mealId);
     try {
-      if (favoriteMeals.has(mealId)) {
+      let response;
+      if (isFavorite) {
         // Remove from favourites
-        const response = await fetch(`/api/favourites/${mealId}?userId=default-user`, {
+        response = await fetch(`/api/favourites/${mealId}?userId=default-user`, {
           method: 'DELETE',
         });
-
-        if (response.ok) {
-          // Invalidate and refetch favourites
-          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
-          toast({ title: "Removed from favourites" });
-        }
       } else {
         // Add to favourites
-        const response = await fetch('/api/favourites', {
+        response = await fetch('/api/favourites', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mealId, userId: 'default-user' }),
         });
+      }
 
-        if (response.ok) {
-          // Invalidate and refetch favourites
-          queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
-          toast({ title: "Added to favourites" });
-        }
+      if (response.ok) {
+        // Update local state immediately for better UX
+        setFavoriteMeals(prev => {
+          const newSet = new Set(prev);
+          if (isFavorite) {
+            newSet.delete(mealId);
+          } else {
+            newSet.add(mealId);
+          }
+          localStorage.setItem('favoriteMeals', JSON.stringify([...newSet]));
+          return newSet;
+        });
+
+        // Invalidate favorites cache across all pages and force refetch
+        queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+        queryClient.refetchQueries({ queryKey: ["/api/favourites"] });
+
+        toast({
+          title: isFavorite ? "Removed from favorites" : "Added to favorites",
+        });
       }
     } catch (error) {
       console.error('Error updating favourite:', error);

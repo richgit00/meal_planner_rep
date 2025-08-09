@@ -47,8 +47,11 @@ export default function Favourites() {
         });
         
         if (response.ok) {
-          // Invalidate and refetch favourites
+          // Invalidate favorites cache across all pages
           queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+          // Force refetch to update UI immediately
+          queryClient.refetchQueries({ queryKey: ["/api/favourites"] });
         }
       } else {
         // Add to favourites
@@ -59,8 +62,11 @@ export default function Favourites() {
         });
         
         if (response.ok) {
-          // Invalidate and refetch favourites
+          // Invalidate favorites cache across all pages
           queryClient.invalidateQueries({ queryKey: ["/api/favourites"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+          // Force refetch to update UI immediately
+          queryClient.refetchQueries({ queryKey: ["/api/favourites"] });
         }
       }
     } catch (error) {
