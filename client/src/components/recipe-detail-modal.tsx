@@ -50,6 +50,19 @@ export function RecipeDetailModal({ open, onOpenChange, meal }: RecipeDetailModa
               </div>
             </div>
 
+            {/* Ingredients */}
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold text-slate-800 mb-4">Ingredients</h4>
+              <div className="space-y-2">
+                {meal.ingredients.map((ingredient, index) => (
+                  <div key={index} className="flex items-center py-2 border-b border-slate-100">
+                    <span className="text-slate-600 w-20 text-sm">{ingredient.amount}</span>
+                    <span className="text-slate-800">{ingredient.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Utensils Section */}
             <div className="mb-6">
               <h4 className="text-lg font-semibold text-slate-800 mb-4">Utensils</h4>
@@ -66,32 +79,18 @@ export function RecipeDetailModal({ open, onOpenChange, meal }: RecipeDetailModa
               </div>
             </div>
 
-            {/* Ingredients and Instructions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-lg font-semibold text-slate-800 mb-4">Ingredients</h4>
-                <div className="space-y-2">
-                  {meal.ingredients.map((ingredient, index) => (
-                    <div key={index} className="flex items-center py-2 border-b border-slate-100">
-                      <span className="text-slate-600 w-20 text-sm">{ingredient.amount}</span>
-                      <span className="text-slate-800">{ingredient.name}</span>
+            {/* Instructions */}
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold text-slate-800 mb-4">Instructions</h4>
+              <div className="space-y-4">
+                {meal.instructions.map((step, index) => (
+                  <div key={index} className="flex">
+                    <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
+                      {index + 1}
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-lg font-semibold text-slate-800 mb-4">Instructions</h4>
-                <div className="space-y-4">
-                  {meal.instructions.map((step, index) => (
-                    <div key={index} className="flex">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
-                        {index + 1}
-                      </div>
-                      <p className="text-slate-700">{step}</p>
-                    </div>
-                  ))}
-                </div>
+                    <p className="text-slate-700">{step}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
