@@ -283,9 +283,9 @@ export default function Admin() {
   const downloadCSVTemplate = () => {
     const csvContent = [
       // CSV Header
-      'name,description,cookTime,difficulty,servings,image,ingredients,instructions',
+      'name,description,cookTime,difficulty,servings,image,ingredients,instructions,utensils',
       // Example row to show format
-      'Example Chicken Parmesan,"Crispy breaded chicken with marinara and cheese","45 mins",Medium,4,"https://images.unsplash.com/photo-1551183053-bf91a1d81141","Chicken breast|2 lbs|fresh;Breadcrumbs|2 cups|pantry;Marinara sauce|2 cups|pantry;Mozzarella cheese|2 cups|fresh","Pound chicken to even thickness;Bread chicken with breadcrumbs;Fry until golden brown;Top with sauce and cheese;Bake at 375°F for 20 minutes"'
+      'Example Chicken Parmesan,"Crispy breaded chicken with marinara and cheese","45 mins",Medium,4,"https://images.unsplash.com/photo-1551183053-bf91a1d81141","Chicken breast|2 lbs|fresh;Breadcrumbs|2 cups|pantry;Marinara sauce|2 cups|pantry;Mozzarella cheese|2 cups|fresh","Pound chicken to even thickness;Bread chicken with breadcrumbs;Fry until golden brown;Top with sauce and cheese;Bake at 375°F for 20 minutes","Large skillet;Meat mallet;Baking dish"'
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -338,11 +338,11 @@ export default function Admin() {
             }
             fields.push(current); // Add last field
 
-            if (fields.length !== 8) {
-              throw new Error(`Row ${index + 2} has ${fields.length} fields, expected 8`);
+            if (fields.length !== 9) {
+              throw new Error(`Row ${index + 2} has ${fields.length} fields, expected 9`);
             }
 
-            const [name, description, cookTime, difficulty, servings, image, ingredientsText, instructionsText] = fields;
+            const [name, description, cookTime, difficulty, servings, image, ingredientsText, instructionsText, utensilsText] = fields;
 
             // Parse ingredients (format: "item|amount|category;item2|amount2|category2")
             const ingredients = ingredientsText.split(';').map(ing => {
@@ -357,6 +357,9 @@ export default function Admin() {
             // Parse instructions (format: "step1;step2;step3")
             const instructions = instructionsText.split(';').map(step => step.trim()).filter(step => step);
 
+            // Parse utensils (format: "utensil1;utensil2;utensil3")
+            const utensils = utensilsText ? utensilsText.split(';').map(utensil => utensil.trim()).filter(utensil => utensil) : [];
+
             return {
               name: name.trim(),
               description: description.trim(),
@@ -365,7 +368,8 @@ export default function Admin() {
               servings: parseInt(servings) || 4,
               image: image.trim(),
               ingredients,
-              instructions
+              instructions,
+              utensils
             };
           } catch (error) {
             console.error(`Error parsing CSV row ${index + 2}:`, error);

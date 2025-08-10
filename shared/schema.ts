@@ -29,7 +29,7 @@ export const pantryItems = pgTable("pantry_items", {
 });
 
 export const insertMealSchema = createInsertSchema(meals, {
-  utensils: z.array(z.string()).default([]),
+  utensils: z.array(z.string()).optional().default([]),
 }).omit({
   id: true,
 });
