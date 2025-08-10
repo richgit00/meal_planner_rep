@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, Share2, Leaf, Package, Fish, Wheat, Apple, ChefHat, ShoppingBasket } from "lucide-react";
+import { ChevronLeft, ChevronRight, Share2, Leaf, Package, Fish, Wheat, Apple, ChefHat, ShoppingBasket, Milk, Beef } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,11 +14,13 @@ interface ShoppingListItem {
 }
 
 interface ShoppingListData {
-  meatAndFish: ShoppingListItem[];
+  fresh: ShoppingListItem[];
   vegetables: ShoppingListItem[];
   fruit: ShoppingListItem[];
-  seasoning: ShoppingListItem[];
-  staples: ShoppingListItem[];
+  dairy: ShoppingListItem[];
+  meat: ShoppingListItem[];
+  grains: ShoppingListItem[];
+  pantry: ShoppingListItem[];
   other: ShoppingListItem[];
   addedPantryItems: ShoppingListItem[];
   summary: {
@@ -135,11 +137,13 @@ export default function ShoppingList() {
     if (!shoppingList) return;
 
     const categories = [
-      { name: 'Meat & Fish', items: shoppingList.meatAndFish, icon: '🥩' },
+      { name: 'Fresh', items: shoppingList.fresh, icon: '🌿' },
       { name: 'Vegetables', items: shoppingList.vegetables, icon: '🥬' },
       { name: 'Fruit', items: shoppingList.fruit, icon: '🍎' },
-      { name: 'Seasoning', items: shoppingList.seasoning, icon: '🧂' },
-      { name: 'Staples', items: shoppingList.staples, icon: '🌾' },
+      { name: 'Dairy', items: shoppingList.dairy, icon: '🥛' },
+      { name: 'Meat', items: shoppingList.meat, icon: '🥩' },
+      { name: 'Grains', items: shoppingList.grains, icon: '🌾' },
+      { name: 'Pantry', items: shoppingList.pantry, icon: '🧂' },
       { name: 'Other', items: shoppingList.other, icon: '🛒' },
       { name: 'Added Pantry Items', items: shoppingList.addedPantryItems || [], icon: '📦' },
     ];
@@ -276,10 +280,10 @@ export default function ShoppingList() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CategoryCard 
-          title="Meat & Fish" 
-          items={shoppingList.meatAndFish} 
-          icon={Fish} 
-          iconColor="text-red-600" 
+          title="Fresh" 
+          items={shoppingList.fresh} 
+          icon={Leaf} 
+          iconColor="text-emerald-600" 
         />
         <CategoryCard 
           title="Vegetables" 
@@ -294,16 +298,28 @@ export default function ShoppingList() {
           iconColor="text-pink-600" 
         />
         <CategoryCard 
-          title="Seasoning" 
-          items={shoppingList.seasoning} 
-          icon={ChefHat} 
-          iconColor="text-purple-600" 
+          title="Dairy" 
+          items={shoppingList.dairy} 
+          icon={Milk} 
+          iconColor="text-blue-600" 
         />
         <CategoryCard 
-          title="Staples" 
-          items={shoppingList.staples} 
+          title="Meat" 
+          items={shoppingList.meat} 
+          icon={Beef} 
+          iconColor="text-red-600" 
+        />
+        <CategoryCard 
+          title="Grains" 
+          items={shoppingList.grains} 
           icon={Wheat} 
           iconColor="text-amber-600" 
+        />
+        <CategoryCard 
+          title="Pantry" 
+          items={shoppingList.pantry} 
+          icon={ChefHat} 
+          iconColor="text-purple-600" 
         />
         <CategoryCard 
           title="Other" 
@@ -315,7 +331,7 @@ export default function ShoppingList() {
           title="Added Pantry Items" 
           items={shoppingList.addedPantryItems || []} 
           icon={Package} 
-          iconColor="text-blue-600" 
+          iconColor="text-orange-600" 
         />
       </div>
 

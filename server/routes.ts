@@ -44,24 +44,24 @@ export async function registerRoutes(app: Express): Promise<void> {
     try {
       console.log(`🔄 PUT /api/meals/${req.params.id} called`);
       console.log(`📤 Request body:`, req.body);
-      
+
       // Validate the incoming data
       const validated = insertMealSchema.partial().parse(req.body);
       console.log(`✅ Validated data:`, validated);
-      
+
       // First check if meal exists
       const existingMeal = await db.select().from(meals).where(eq(meals.id, req.params.id));
       if (existingMeal.length === 0) {
         console.log(`❌ Meal not found with ID: ${req.params.id}`);
         return res.status(404).json({ message: "Meal not found" });
       }
-      
+
       // Update the meal
       const [updatedMeal] = await db.update(meals)
         .set(validated)
         .where(eq(meals.id, req.params.id))
         .returning();
-        
+
       console.log(`📊 Database update result:`, updatedMeal);
       console.log(`✅ Successfully updated meal:`, updatedMeal);
       res.json(updatedMeal);
@@ -78,19 +78,19 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.delete("/api/meals/:id", async (req, res) => {
     try {
       console.log(`🗑️ DELETE /api/meals/${req.params.id} called`);
-      
+
       // First check if meal exists
       const existingMeal = await db.select().from(meals).where(eq(meals.id, req.params.id));
       if (existingMeal.length === 0) {
         console.log(`❌ Meal not found with ID: ${req.params.id}`);
         return res.status(404).json({ message: "Meal not found" });
       }
-      
+
       // Delete the meal
       const [deleted] = await db.delete(meals)
         .where(eq(meals.id, req.params.id))
         .returning();
-        
+
       console.log(`✅ Successfully deleted meal:`, deleted);
       res.status(204).send();
     } catch (error) {
@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post("/api/meals/bulk-import", async (req, res) => {
     try {
       let mealsToImport;
-      
+
       // Handle both direct array and wrapped object formats
       if (Array.isArray(req.body)) {
         mealsToImport = req.body;
@@ -115,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       const createdMeals = [];
       const errors = [];
-      
+
       for (let i = 0; i < mealsToImport.length; i++) {
         const mealData = mealsToImport[i];
         try {
@@ -200,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  
+
 
   // Shopping List Generation
   app.get("/api/shopping-list/:weekStartDate", async (req, res) => {
@@ -212,100 +212,69 @@ export async function registerRoutes(app: Express): Promise<void> {
       const mealPlan = mealPlanResult[0];
 
       const mealsData = await db.select().from(meals);
-      
+
       const selectedMeals = mealPlan.meals
         .filter(day => day.mealId)
         .map(day => mealsData.find(meal => meal.id === day.mealId))
         .filter(meal => meal && meal.ingredients);
 
+      // Initialize shopping list with ingredient categories
       const shoppingList = {
-        meatAndFish: [] as Array<{ name: string; quantity: string; checked: boolean }>,
+        fresh: [] as Array<{ name: string; quantity: string; checked: boolean }>,
         vegetables: [] as Array<{ name: string; quantity: string; checked: boolean }>,
         fruit: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        seasoning: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        staples: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        other: [] as Array<{ name: string; quantity: string; checked: boolean }>
+        dairy: [] as Array<{ name: string; quantity: string; checked: boolean }>,
+        meat: [] as Array<{ name: string; quantity: string; checked: boolean }>,
+        grains: [] as Array<{ name: string; quantity: string; checked: boolean }>,
+        pantry: [] as Array<{ name: string; quantity: string; checked: boolean }>,
+        other: [] as Array<{ name: string; quantity: string; checked: boolean }>,
+        addedPantryItems: [] as Array<{ name: string; quantity: string; checked: boolean }>
       };
 
-      // Category mapping function
-      const categorizeIngredient = (name: string): keyof typeof shoppingList => {
-        const lowerName = name.toLowerCase();
-        
-        // Meat and Fish
-        if (lowerName.includes('chicken') || lowerName.includes('beef') || lowerName.includes('pork') || 
-            lowerName.includes('fish') || lowerName.includes('salmon') || lowerName.includes('turkey') ||
-            lowerName.includes('lamb') || lowerName.includes('bacon') || lowerName.includes('ham') ||
-            lowerName.includes('ribeye') || lowerName.includes('sirloin') || lowerName.includes('thighs')) {
-          return 'meatAndFish';
-        }
-        
-        // Vegetables
-        if (lowerName.includes('onion') || lowerName.includes('garlic') || lowerName.includes('pepper') ||
-            lowerName.includes('tomato') || lowerName.includes('mushroom') || lowerName.includes('carrot') ||
-            lowerName.includes('celery') || lowerName.includes('lettuce') || lowerName.includes('spinach') ||
-            lowerName.includes('broccoli') || lowerName.includes('cauliflower') || lowerName.includes('eggplant') ||
-            lowerName.includes('vegetable') || lowerName.includes('ginger') || lowerName.includes('herbs') ||
-            lowerName.includes('basil') || lowerName.includes('dill') || lowerName.includes('thyme')) {
-          return 'vegetables';
-        }
-        
-        // Fruit
-        if (lowerName.includes('apple') || lowerName.includes('banana') || lowerName.includes('orange') ||
-            lowerName.includes('lemon') || lowerName.includes('lime') || lowerName.includes('berry') ||
-            lowerName.includes('grape') || lowerName.includes('pear') || lowerName.includes('peach')) {
-          return 'fruit';
-        }
-        
-        // Seasoning
-        if (lowerName.includes('salt') || lowerName.includes('pepper') || lowerName.includes('spice') ||
-            lowerName.includes('oregano') || lowerName.includes('cumin') || lowerName.includes('paprika') ||
-            lowerName.includes('curry') || lowerName.includes('chili') || lowerName.includes('saffron') ||
-            lowerName.includes('cinnamon') || lowerName.includes('sauce') || lowerName.includes('vinegar') ||
-            lowerName.includes('paste') || lowerName.includes('powder') || lowerName.includes('seasoning')) {
-          return 'seasoning';
-        }
-        
-        // Staples
-        if (lowerName.includes('rice') || lowerName.includes('pasta') || lowerName.includes('bread') ||
-            lowerName.includes('flour') || lowerName.includes('sugar') || lowerName.includes('oil') ||
-            lowerName.includes('butter') || lowerName.includes('milk') || lowerName.includes('cheese') ||
-            lowerName.includes('stock') || lowerName.includes('broth') || lowerName.includes('wine') ||
-            lowerName.includes('coconut milk') || lowerName.includes('beans') || lowerName.includes('can')) {
-          return 'staples';
-        }
-        
-        return 'other';
-      };
-
-      // Aggregate ingredients by name
-      const ingredientMap = new Map<string, string>();
+      // Aggregate ingredients by name and category
+      const ingredientMap = new Map<string, { quantity: string; category: string }>();
 
       selectedMeals.forEach(meal => {
         if (meal && meal.ingredients && Array.isArray(meal.ingredients)) {
           meal.ingredients.forEach(ingredient => {
             if (ingredient && ingredient.name && ingredient.amount) {
               const ingredientName = ingredient.name.trim();
+              const category = ingredient.category || 'other';
+
               if (ingredientMap.has(ingredientName)) {
                 const existing = ingredientMap.get(ingredientName)!;
-                ingredientMap.set(ingredientName, existing + " + " + ingredient.amount);
+                ingredientMap.set(ingredientName, {
+                  quantity: existing.quantity + " + " + ingredient.amount,
+                  category: existing.category
+                });
               } else {
-                ingredientMap.set(ingredientName, ingredient.amount);
+                ingredientMap.set(ingredientName, {
+                  quantity: ingredient.amount,
+                  category: category
+                });
               }
             }
           });
         }
       });
 
-      // Process each ingredient and categorize
-      Array.from(ingredientMap.entries()).forEach(([name, quantity]) => {
-        const item = { name, quantity, checked: false };
-        const category = categorizeIngredient(name);
-        shoppingList[category].push(item);
+      // Process each ingredient and categorize by database category
+      Array.from(ingredientMap.entries()).forEach(([name, data]) => {
+        const item = { name, quantity: data.quantity, checked: false };
+        const category = data.category.toLowerCase();
+
+        // Map database categories to shopping list categories
+        if (shoppingList.hasOwnProperty(category)) {
+          (shoppingList as any)[category].push(item);
+        } else {
+          shoppingList.other.push(item);
+        }
       });
 
-      const totalItems = shoppingList.meatAndFish.length + shoppingList.vegetables.length + 
-                        shoppingList.fruit.length + shoppingList.seasoning.length + 
-                        shoppingList.staples.length + shoppingList.other.length;
+      const totalItems = shoppingList.fresh.length + shoppingList.vegetables.length + 
+                        shoppingList.fruit.length + shoppingList.dairy.length +
+                        shoppingList.meat.length + shoppingList.grains.length +
+                        shoppingList.pantry.length + shoppingList.other.length;
 
       res.json({
         ...shoppingList,
@@ -314,7 +283,8 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       });
     } catch (error) {
-      res.status(500).json({ message: "Failed to generate shopping list" });
+      console.error("Error generating shopping list:", error);
+      res.status(500).json({ message: "Failed to generate shopping list", error: error.message });
     }
   });
 }
