@@ -14,15 +14,7 @@ interface ShoppingListItem {
 }
 
 interface ShoppingListData {
-  fresh: ShoppingListItem[];
-  vegetables: ShoppingListItem[];
-  fruit: ShoppingListItem[];
-  dairy: ShoppingListItem[];
-  meat: ShoppingListItem[];
-  grains: ShoppingListItem[];
-  pantry: ShoppingListItem[];
-  other: ShoppingListItem[];
-  addedPantryItems: ShoppingListItem[];
+  [key: string]: ShoppingListItem[] | { totalItems: number };
   summary: {
     totalItems: number;
   };
@@ -62,6 +54,42 @@ const getCurrentWeekMonday = () => {
   const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
   const monday = new Date(today.setDate(diff));
   return monday.toISOString().split('T')[0];
+};
+
+// Helper function to get icon for category
+const getCategoryIcon = (categoryName: string) => {
+  const iconMap: { [key: string]: string } = {
+    fresh: '🌿',
+    vegetables: '🥬',
+    fruit: '🍎',
+    dairy: '🥛',
+    meat: '🥩',
+    grains: '🌾',
+    pantry: '🧂',
+    seasonings: '🧂',
+    spices: '🌶️',
+    condiments: '🍯',
+    other: '🛒'
+  };
+  return iconMap[categoryName.toLowerCase()] || '🛒';
+};
+
+// Helper function to get Lucide icon component for category
+const getCategoryLucideIcon = (categoryName: string) => {
+  const iconMap: { [key: string]: { component: any; color: string } } = {
+    fresh: { component: Leaf, color: 'text-emerald-600' },
+    vegetables: { component: Leaf, color: 'text-green-600' },
+    fruit: { component: Apple, color: 'text-pink-600' },
+    dairy: { component: Milk, color: 'text-blue-600' },
+    meat: { component: Beef, color: 'text-red-600' },
+    grains: { component: Wheat, color: 'text-amber-600' },
+    pantry: { component: ChefHat, color: 'text-purple-600' },
+    seasonings: { component: ChefHat, color: 'text-purple-600' },
+    spices: { component: ChefHat, color: 'text-orange-600' },
+    condiments: { component: ChefHat, color: 'text-yellow-600' },
+    other: { component: ShoppingBasket, color: 'text-gray-600' }
+  };
+  return iconMap[categoryName.toLowerCase()] || { component: ShoppingBasket, color: 'text-gray-600' };
 };
 
 export default function ShoppingList() {
@@ -136,24 +164,13 @@ export default function ShoppingList() {
   const handleShareList = async () => {
     if (!shoppingList) return;
 
-    const categories = [
-      { name: 'Fresh', items: shoppingList.fresh, icon: '🌿' },
-      { name: 'Vegetables', items: shoppingList.vegetables, icon: '🥬' },
-      { name: 'Fruit', items: shoppingList.fruit, icon: '🍎' },
-      { name: 'Dairy', items: shoppingList.dairy, icon: '🥛' },
-      { name: 'Meat', items: shoppingList.meat, icon: '🥩' },
-      { name: 'Grains', items: shoppingList.grains, icon: '🌾' },
-      { name: 'Pantry', items: shoppingList.pantry, icon: '🧂' },
-      { name: 'Other', items: shoppingList.other, icon: '🛒' },
-      { name: 'Added Pantry Items', items: shoppingList.addedPantryItems || [], icon: '📦' },
-    ];
-
     let shareText = `🛒 Shopping List - Week of ${formatWeekRange(currentWeek)}\n\n`;
 
-    categories.forEach(category => {
-      if (category.items.length > 0) {
-        shareText += `${category.icon} ${category.name}:\n`;
-        category.items.forEach(item => {
+    Object.entries(shoppingList).forEach(([categoryName, items]) => {
+      if (categoryName !== 'summary' && Array.isArray(items) && items.length > 0) {
+        const icon = getCategoryIcon(categoryName);
+        shareText += `${icon} ${categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}:\n`;
+        items.forEach(item => {
           const isChecked = checkedItems.has(item.name);
           shareText += `${isChecked ? '✅' : '☐'} ${item.name} - ${item.quantity}\n`;
         });
@@ -279,60 +296,22 @@ export default function ShoppingList() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CategoryCard 
-          title="Fresh" 
-          items={shoppingList.fresh} 
-          icon={Leaf} 
-          iconColor="text-emerald-600" 
-        />
-        <CategoryCard 
-          title="Vegetables" 
-          items={shoppingList.vegetables} 
-          icon={Leaf} 
-          iconColor="text-green-600" 
-        />
-        <CategoryCard 
-          title="Fruit" 
-          items={shoppingList.fruit} 
-          icon={Apple} 
-          iconColor="text-pink-600" 
-        />
-        <CategoryCard 
-          title="Dairy" 
-          items={shoppingList.dairy} 
-          icon={Milk} 
-          iconColor="text-blue-600" 
-        />
-        <CategoryCard 
-          title="Meat" 
-          items={shoppingList.meat} 
-          icon={Beef} 
-          iconColor="text-red-600" 
-        />
-        <CategoryCard 
-          title="Grains" 
-          items={shoppingList.grains} 
-          icon={Wheat} 
-          iconColor="text-amber-600" 
-        />
-        <CategoryCard 
-          title="Pantry" 
-          items={shoppingList.pantry} 
-          icon={ChefHat} 
-          iconColor="text-purple-600" 
-        />
-        <CategoryCard 
-          title="Other" 
-          items={shoppingList.other} 
-          icon={ShoppingBasket} 
-          iconColor="text-gray-600" 
-        />
-        <CategoryCard 
-          title="Added Pantry Items" 
-          items={shoppingList.addedPantryItems || []} 
-          icon={Package} 
-          iconColor="text-orange-600" 
-        />
+        {Object.entries(shoppingList)
+          .filter(([categoryName, items]) => categoryName !== 'summary' && Array.isArray(items))
+          .map(([categoryName, items]) => {
+            const { component: IconComponent, color } = getCategoryLucideIcon(categoryName);
+            const title = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+            
+            return (
+              <CategoryCard 
+                key={categoryName}
+                title={title} 
+                items={items as ShoppingListItem[]} 
+                icon={IconComponent} 
+                iconColor={color} 
+              />
+            );
+          })}
       </div>
 
       {/* Shopping Summary */}

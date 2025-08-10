@@ -218,19 +218,6 @@ export async function registerRoutes(app: Express): Promise<void> {
         .map(day => mealsData.find(meal => meal.id === day.mealId))
         .filter(meal => meal && meal.ingredients);
 
-      // Initialize shopping list with ingredient categories
-      const shoppingList = {
-        fresh: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        vegetables: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        fruit: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        dairy: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        meat: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        grains: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        pantry: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        other: [] as Array<{ name: string; quantity: string; checked: boolean }>,
-        addedPantryItems: [] as Array<{ name: string; quantity: string; checked: boolean }>
-      };
-
       // Aggregate ingredients by name and category
       const ingredientMap = new Map<string, { quantity: string; category: string }>();
 
@@ -258,23 +245,46 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       });
 
-      // Process each ingredient and categorize by database category
+      // Create dynamic shopping list based on actual categories from ingredients
+      const categoryMap = new Map<string, Array<{ name: string; quantity: string; checked: boolean }>>();
+      
+      // Process each ingredient and group by actual category
       Array.from(ingredientMap.entries()).forEach(([name, data]) => {
         const item = { name, quantity: data.quantity, checked: false };
-        const category = data.category.toLowerCase();
+        const category = data.category;
 
-        // Map database categories to shopping list categories
-        if (shoppingList.hasOwnProperty(category)) {
-          (shoppingList as any)[category].push(item);
-        } else {
-          shoppingList.other.push(item);
+        if (!categoryMap.has(category)) {
+          categoryMap.set(category, []);
+        }
+        categoryMap.get(category)!.push(item);
+      });
+
+      // Define the preferred order: fresh first, then vegetables, finishing with pantry/seasonings
+      const categoryOrder = [
+        'fresh', 'vegetables', 'fruit', 'dairy', 'meat', 'grains', 
+        'pantry', 'seasonings', 'spices', 'condiments', 'other'
+      ];
+
+      // Build the shopping list in the preferred order
+      const shoppingList: any = {};
+      let totalItems = 0;
+
+      // First, add categories in the preferred order if they exist
+      categoryOrder.forEach(preferredCategory => {
+        for (const [actualCategory, items] of categoryMap.entries()) {
+          if (actualCategory.toLowerCase() === preferredCategory) {
+            shoppingList[actualCategory] = items;
+            totalItems += items.length;
+            categoryMap.delete(actualCategory);
+          }
         }
       });
 
-      const totalItems = shoppingList.fresh.length + shoppingList.vegetables.length + 
-                        shoppingList.fruit.length + shoppingList.dairy.length +
-                        shoppingList.meat.length + shoppingList.grains.length +
-                        shoppingList.pantry.length + shoppingList.other.length;
+      // Then add any remaining categories not in the preferred order
+      for (const [category, items] of categoryMap.entries()) {
+        shoppingList[category] = items;
+        totalItems += items.length;
+      }
 
       res.json({
         ...shoppingList,
