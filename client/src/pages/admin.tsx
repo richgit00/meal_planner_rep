@@ -147,7 +147,7 @@ export default function Admin() {
       return {
         name: parts[0] || line,
         amount: parts[1] || "1 unit",
-        category: (parts[2] === "pantry" ? "pantry" : "fresh") as "fresh" | "pantry"
+        category: parts[2] || "fresh"
       };
     });
   };
@@ -160,7 +160,7 @@ export default function Admin() {
     return text ? text.split('\n').filter(line => line.trim()) : [];
   };
 
-  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }>) => {
+  const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: string }>) => {
     return ingredients.map(ing => `${ing.name} | ${ing.amount} | ${ing.category}`).join('\n');
   };
 
@@ -350,7 +350,7 @@ export default function Admin() {
               return {
                 name: parts[0]?.trim() || '',
                 amount: parts[1]?.trim() || '1 unit',
-                category: (parts[2]?.trim() === 'pantry' ? 'pantry' : 'fresh') as 'fresh' | 'pantry'
+                category: parts[2]?.trim() || 'fresh'
               };
             }).filter(ing => ing.name);
 
@@ -554,7 +554,7 @@ export default function Admin() {
                         <FormLabel>Ingredients (one per line: "name | amount | category")</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Chicken breast | 2 lbs | fresh&#10;Salt | 1 tsp | pantry"
+                            placeholder="Chicken breast | 2 lbs | fresh&#10;Tomatoes | 4 medium | vegetables&#10;Salt | 1 tsp | pantry&#10;Apples | 3 large | fruit"
                             className="min-h-[100px]"
                             {...field} 
                           />
