@@ -119,22 +119,6 @@ const initialMeals = [
   }
 ];
 
- },
-
-  { id: "pantry-015", name: "Flour", category: "Pantry Staples" },
-  { id: "pantry-016", name: "Sugar", category: "Pantry Staples" },
-  { id: "pantry-017", name: "Rice", category: "Pantry Staples" },
-  { id: "pantry-018", name: "Pasta", category: "Pantry Staples" },
-  { id: "pantry-019", name: "Canned Beans", category: "Pantry Staples" },
-  { id: "pantry-020", name: "Canned Tomatoes", category: "Pantry Staples" },
-  { id: "pantry-021", name: "Breadcrumbs", category: "Pantry Staples" },
-  { id: "pantry-022", name: "Soy Sauce", category: "Pantry Staples" },
-  { id: "pantry-023", name: "Coconut Milk", category: "Pantry Staples" },
-  { id: "pantry-024", name: "Chicken Broth", category: "Pantry Staples" },
-  { id: "pantry-025", name: "BBQ Sauce", category: "Pantry Staples" },
-  { id: "pantry-026", name: "Marinara Sauce", category: "Pantry Staples" },
-  { id: "pantry-027", name: "White Wine", category: "Pantry Staples" }
-];
 
 export async function seedDatabase() {
   try {
@@ -142,8 +126,7 @@ export async function seedDatabase() {
     
     // Check if data already exists
     const existingMeals = await db.select().from(meals);
-    const existingPantryItems = await db.select().from(pantryItems);
-    
+       
     if (existingMeals.length === 0) {
       console.log("Adding initial meals...");
       await db.insert(meals).values(initialMeals);
@@ -151,14 +134,7 @@ export async function seedDatabase() {
     } else {
       console.log(`Database already has ${existingMeals.length} meals, skipping meal seeding`);
     }
-    
-    if (existingPantryItems.length === 0) {
-      console.log("Adding initial pantry items...");
-      await db.insert(pantryItems).values(initialPantryItems);
-      console.log(`Added ${initialPantryItems.length} pantry items`);
-    } else {
-      console.log(`Database already has ${existingPantryItems.length} pantry items, skipping pantry seeding`);
-    }
+       
     
     console.log("Database seeding completed!");
   } catch (error) {
