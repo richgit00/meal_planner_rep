@@ -20,6 +20,7 @@ import { z } from "zod";
 const mealFormSchema = insertMealSchema.extend({
   ingredientsText: z.string().min(1, "Ingredients are required"),
   instructionsText: z.string().min(1, "Instructions are required"),
+  utensilsText: z.string().optional(),
 });
 
 type MealFormData = z.infer<typeof mealFormSchema>;
@@ -46,6 +47,7 @@ export default function Admin() {
       image: "",
       ingredientsText: "",
       instructionsText: "",
+      utensilsText: "",
     },
   });
 
@@ -65,6 +67,7 @@ export default function Admin() {
         image: "",
         ingredientsText: "",
         instructionsText: "",
+        utensilsText: "",
       });
     }, 100);
   };
@@ -153,6 +156,10 @@ export default function Admin() {
     return text.split('\n').filter(line => line.trim());
   };
 
+  const parseUtensilsText = (text: string) => {
+    return text ? text.split('\n').filter(line => line.trim()) : [];
+  };
+
   const formatIngredientsText = (ingredients: Array<{ name: string; amount: string; category: "fresh" | "pantry" }>) => {
     return ingredients.map(ing => `${ing.name} | ${ing.amount} | ${ing.category}`).join('\n');
   };
@@ -161,11 +168,16 @@ export default function Admin() {
     return instructions.join('\n');
   };
 
+  const formatUtensilsText = (utensils: string[]) => {
+    return utensils ? utensils.join('\n') : '';
+  };
+
   const onSubmit = (data: MealFormData) => {
     console.log("Form submitted with data:", data);
 
     const ingredients = parseIngredientsText(data.ingredientsText);
     const instructions = parseInstructionsText(data.instructionsText);
+    const utensils = parseUtensilsText(data.utensilsText || "");
 
     const mealData: InsertMeal = {
       name: data.name,
@@ -176,6 +188,7 @@ export default function Admin() {
       image: data.image,
       ingredients,
       instructions,
+      utensils,
     };
 
     console.log("Submitting meal data:", mealData);
@@ -200,6 +213,7 @@ export default function Admin() {
       image: meal.image,
       ingredientsText: formatIngredientsText(meal.ingredients),
       instructionsText: formatInstructionsText(meal.instructions),
+      utensilsText: formatUtensilsText(meal.utensils || []),
     });
     setShowMealDialog(true);
   };
@@ -594,6 +608,24 @@ export default function Admin() {
                     )}
                   />
 
+                  <FormField
+                    control={form.control}
+                    name="utensilsText"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Utensils (one per line, optional)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Large saucepan&#10;Frying pan&#10;Wooden spoon"
+                            className="min-h-[80px]"
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="flex justify-end space-x-4">
                     <Button type="button" variant="outline" onClick={handleCloseDialog}>
                       Cancel
@@ -633,8 +665,10 @@ export default function Admin() {
                         // Parse and prepare data
                         const ingredients = parseIngredientsText(formData.ingredientsText);
                         const instructions = parseInstructionsText(formData.instructionsText);
+                        const utensils = parseUtensilsText(formData.utensilsText || "");
                         console.log("Parsed ingredients:", ingredients);
                         console.log("Parsed instructions:", instructions);
+                        console.log("Parsed utensils:", utensils);
 
                         const mealData = {
                           name: formData.name,
@@ -645,6 +679,7 @@ export default function Admin() {
                           image: formData.image,
                           ingredients,
                           instructions,
+                          utensils,
                         };
                         console.log("Final meal data to send:", mealData);
 

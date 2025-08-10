@@ -50,6 +50,22 @@ export function RecipeDetailModal({ open, onOpenChange, meal }: RecipeDetailModa
               </div>
             </div>
 
+            {/* Utensils Section */}
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold text-slate-800 mb-4">Utensils</h4>
+              <div className="flex flex-wrap gap-2">
+                {meal.utensils && meal.utensils.length > 0 ? (
+                  meal.utensils.map((utensil, index) => (
+                    <span key={index} className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm">
+                      {utensil}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-slate-500 text-sm">No specific utensils required</span>
+                )}
+              </div>
+            </div>
+
             {/* Ingredients and Instructions */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>

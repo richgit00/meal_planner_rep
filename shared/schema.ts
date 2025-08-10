@@ -13,6 +13,7 @@ export const meals = pgTable("meals", {
   image: text("image").notNull(),
   ingredients: json("ingredients").$type<Array<{ name: string; amount: string; category: 'fresh' | 'pantry' }>>().notNull(),
   instructions: json("instructions").$type<Array<string>>().notNull(),
+  utensils: json("utensils").$type<Array<string>>().notNull(),
 });
 
 export const mealPlans = pgTable("meal_plans", {
@@ -27,7 +28,9 @@ export const pantryItems = pgTable("pantry_items", {
   category: text("category").notNull(),
 });
 
-export const insertMealSchema = createInsertSchema(meals).omit({
+export const insertMealSchema = createInsertSchema(meals, {
+  utensils: z.array(z.string()).default([]),
+}).omit({
   id: true,
 });
 
