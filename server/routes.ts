@@ -247,7 +247,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
       // Create dynamic shopping list based on actual categories from ingredients
       const categoryMap = new Map<string, Array<{ name: string; quantity: string; checked: boolean }>>();
-      
+
       // Process each ingredient and group by actual category
       Array.from(ingredientMap.entries()).forEach(([name, data]) => {
         const item = { name, quantity: data.quantity, checked: false };
