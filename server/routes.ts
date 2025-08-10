@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { randomUUID } from "crypto";
 
 import { db } from "./db";
-import { meals, mealPlans, pantryItems } from "@shared/schema";
-import { insertMealPlanSchema, insertMealSchema, insertPantryItemSchema } from "@shared/schema";
+import { meals, mealPlans } from "@shared/schema";
+import { insertMealPlanSchema, insertMealSchema } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<void> {
@@ -200,150 +200,11 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // Pantry Items
-  app.get("/api/pantry-items", async (req, res) => {
-    try {
-      const items = await db.select().from(pantryItems);
-      res.json(items);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch pantry items" });
-    }
-  });
-
-  app.post("/api/pantry-items/cleanup", async (req, res) => {
-    try {
-      console.log("🧹 Starting comprehensive pantry cleanup...");
-      
-      // Get all meals and their ingredients
-      const allMeals = await db.select().from(meals);
-      console.log(`📊 Analyzing ${allMeals.length} meals for pantry ingredients...`);
-      
-      // Extract all pantry ingredients from meals with better normalization
-      const usedPantryIngredients = new Set<string>();
-      
-      allMeals.forEach(meal => {
-        if (meal.ingredients && Array.isArray(meal.ingredients)) {
-          meal.ingredients.forEach(ingredient => {
-            if (ingredient.category === 'pantry' && ingredient.name) {
-              // More thorough normalization
-              let normalizedName = ingredient.name.toLowerCase().trim()
-                .replace(/\s+/g, ' ')  // normalize spaces
-                .replace(/[.,]/g, '')  // remove punctuation
-                .replace(/\bground\b/g, '')  // remove common modifiers
-                .replace(/\bfresh\b/g, '')
-                .replace(/\bdried\b/g, '')
-                .replace(/\bwhole\b/g, '')
-                .trim();
-              
-              if (normalizedName) {
-                usedPantryIngredients.add(normalizedName);
-                console.log(`🥫 Found pantry ingredient: ${ingredient.name} -> ${normalizedName}`);
-              }
-            }
-          });
-        }
-      });
-      
-      console.log(`📋 Total unique pantry ingredients found: ${usedPantryIngredients.size}`);
-      
-      // Get current pantry items
-      const currentPantryItems = await db.select().from(pantryItems);
-      console.log(`📦 Current pantry items in database: ${currentPantryItems.length}`);
-      
-      // Find which pantry items are actually used with improved matching
-      const usedPantryItems = currentPantryItems.filter(item => {
-        const itemNameLower = item.name.toLowerCase().trim()
-          .replace(/\s+/g, ' ')
-          .replace(/[.,]/g, '')
-          .replace(/\bground\b/g, '')
-          .replace(/\bfresh\b/g, '')
-          .replace(/\bdried\b/g, '')
-          .replace(/\bwhole\b/g, '')
-          .trim();
-        
-        const isUsed = Array.from(usedPantryIngredients).some(ingredient => {
-          // Exact match
-          if (ingredient === itemNameLower) return true;
-          
-          // Partial matches (ingredient contains item name or vice versa)
-          if (ingredient.includes(itemNameLower) && itemNameLower.length > 2) return true;
-          if (itemNameLower.includes(ingredient) && ingredient.length > 2) return true;
-          
-          // Word-based matching for compound ingredients
-          const ingredientWords = ingredient.split(' ');
-          const itemWords = itemNameLower.split(' ');
-          
-          return ingredientWords.some(iWord => 
-            itemWords.some(pWord => 
-              (iWord === pWord && iWord.length > 2) ||
-              (iWord.includes(pWord) && pWord.length > 2) ||
-              (pWord.includes(iWord) && iWord.length > 2)
-            )
-          );
-        });
-        
-        if (isUsed) {
-          console.log(`✅ Keeping: ${item.name} (matches meal ingredients)`);
-        }
-        
-        return isUsed;
-      });
-      
-      // Find items to remove
-      const itemsToRemove = currentPantryItems.filter(item => 
-        !usedPantryItems.some(usedItem => usedItem.id === item.id)
-      );
-      
-      console.log(`🗑️ Items to remove: ${itemsToRemove.length}`);
-      itemsToRemove.forEach(item => console.log(`  - ${item.name} (${item.category})`));
-      
-      // Remove unused pantry items
-      let removedCount = 0;
-      if (itemsToRemove.length > 0) {
-        for (const item of itemsToRemove) {
-          await db.delete(pantryItems).where(eq(pantryItems.id, item.id));
-          removedCount++;
-          console.log(`🗑️ Removed: ${item.name}`);
-        }
-      }
-      
-      console.log(`✅ Pantry cleanup completed: removed ${removedCount} items, ${usedPantryItems.length} remaining`);
-      
-      res.json({
-        message: `Pantry cleanup completed successfully`,
-        removedItems: removedCount,
-        remainingItems: usedPantryItems.length,
-        removedItemNames: itemsToRemove.map(item => item.name),
-        keptItems: usedPantryItems.map(item => item.name)
-      });
-      
-    } catch (error) {
-      console.error("❌ Pantry cleanup error:", error);
-      res.status(500).json({ message: "Failed to cleanup pantry items", error: error.message });
-    }
-  });
-
-  app.put("/api/pantry-items/:id", async (req, res) => {
-    try {
-      const [updatedItem] = await db.update(pantryItems)
-        .set(req.body)
-        .where(eq(pantryItems.id, req.params.id))
-        .returning();
-      if (!updatedItem) {
-        return res.status(404).json({ message: "Pantry item not found" });
-      }
-      res.json(updatedItem);
-    } catch (error) {
-      res.status(400).json({ message: "Failed to update pantry item" });
-    }
-  });
+  
 
   // Shopping List Generation
   app.get("/api/shopping-list/:weekStartDate", async (req, res) => {
     try {
-      const { addedPantryItems } = req.query;
-      const addedItems = addedPantryItems ? JSON.parse(addedPantryItems as string) : [];
-      
       const mealPlanResult = await db.select().from(mealPlans).where(eq(mealPlans.weekStartDate, req.params.weekStartDate));
       if (mealPlanResult.length === 0) {
         return res.status(404).json({ message: "Meal plan not found" });
@@ -351,7 +212,6 @@ export async function registerRoutes(app: Express): Promise<void> {
       const mealPlan = mealPlanResult[0];
 
       const mealsData = await db.select().from(meals);
-      const pantryItemsData = await db.select().from(pantryItems);
       
       const selectedMeals = mealPlan.meals
         .filter(day => day.mealId)
@@ -368,7 +228,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       };
 
       // Category mapping function
-      const categorizeIngredient = (name: string, originalCategory: 'fresh' | 'pantry'): keyof typeof shoppingList => {
+      const categorizeIngredient = (name: string): keyof typeof shoppingList => {
         const lowerName = name.toLowerCase();
         
         // Meat and Fish
@@ -401,8 +261,7 @@ export async function registerRoutes(app: Express): Promise<void> {
             lowerName.includes('oregano') || lowerName.includes('cumin') || lowerName.includes('paprika') ||
             lowerName.includes('curry') || lowerName.includes('chili') || lowerName.includes('saffron') ||
             lowerName.includes('cinnamon') || lowerName.includes('sauce') || lowerName.includes('vinegar') ||
-            lowerName.includes('paste') || originalCategory === 'pantry' && 
-            (lowerName.includes('powder') || lowerName.includes('seasoning'))) {
+            lowerName.includes('paste') || lowerName.includes('powder') || lowerName.includes('seasoning')) {
           return 'seasoning';
         }
         
@@ -419,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       };
 
       // Aggregate ingredients by name
-      const ingredientMap = new Map<string, { quantity: string; category: 'fresh' | 'pantry' }>();
+      const ingredientMap = new Map<string, string>();
 
       selectedMeals.forEach(meal => {
         if (meal && meal.ingredients && Array.isArray(meal.ingredients)) {
@@ -427,17 +286,10 @@ export async function registerRoutes(app: Express): Promise<void> {
             if (ingredient && ingredient.name && ingredient.amount) {
               const ingredientName = ingredient.name.trim();
               if (ingredientMap.has(ingredientName)) {
-                // Keep existing quantity for now (could be improved to sum quantities)
                 const existing = ingredientMap.get(ingredientName)!;
-                ingredientMap.set(ingredientName, {
-                  quantity: existing.quantity + " + " + ingredient.amount,
-                  category: ingredient.category || existing.category
-                });
+                ingredientMap.set(ingredientName, existing + " + " + ingredient.amount);
               } else {
-                ingredientMap.set(ingredientName, {
-                  quantity: ingredient.amount,
-                  category: ingredient.category || 'pantry'
-                });
+                ingredientMap.set(ingredientName, ingredient.amount);
               }
             }
           });
@@ -445,44 +297,18 @@ export async function registerRoutes(app: Express): Promise<void> {
       });
 
       // Process each ingredient and categorize
-      Array.from(ingredientMap.entries()).forEach(([name, details]) => {
-        // Check if pantry item is in stock
-        const pantryItem = pantryItemsData.find(p => 
-          p.name.toLowerCase().includes(name.toLowerCase()) || 
-          name.toLowerCase().includes(p.name.toLowerCase())
-        );
-        const needToShop = details.category === 'fresh' || !pantryItem || pantryItem.status !== 'in-stock';
-        
-        if (needToShop) {
-          const item = { name, quantity: details.quantity, checked: false };
-          const category = categorizeIngredient(name, details.category);
-          shoppingList[category].push(item);
-        }
+      Array.from(ingredientMap.entries()).forEach(([name, quantity]) => {
+        const item = { name, quantity, checked: false };
+        const category = categorizeIngredient(name);
+        shoppingList[category].push(item);
       });
-
-      // Add manually added pantry items to the shopping list
-      const addedPantryItemsForList = [];
-      if (addedItems.length > 0) {
-        for (const itemId of addedItems) {
-          const pantryItem = pantryItemsData.find(p => p.id === itemId);
-          if (pantryItem) {
-            addedPantryItemsForList.push({
-              name: pantryItem.name,
-              quantity: "1", // Default quantity for manually added items
-              checked: false
-            });
-          }
-        }
-      }
 
       const totalItems = shoppingList.meatAndFish.length + shoppingList.vegetables.length + 
                         shoppingList.fruit.length + shoppingList.seasoning.length + 
-                        shoppingList.staples.length + shoppingList.other.length + 
-                        addedPantryItemsForList.length;
+                        shoppingList.staples.length + shoppingList.other.length;
 
       res.json({
         ...shoppingList,
-        addedPantryItems: addedPantryItemsForList,
         summary: {
           totalItems
         }

@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { meals, pantryItems } from "@shared/schema";
+import { meals } from "@shared/schema";
 
 const initialMeals = [
   {
@@ -119,22 +119,7 @@ const initialMeals = [
   }
 ];
 
-const initialPantryItems = [
-  { id: "pantry-001", name: "Salt", category: "Spices & Seasonings" },
-  { id: "pantry-002", name: "Black Pepper", category: "Spices & Seasonings" },
-  { id: "pantry-003", name: "Garlic Powder", category: "Spices & Seasonings" },
-  { id: "pantry-004", name: "Paprika", category: "Spices & Seasonings" },
-  { id: "pantry-005", name: "Cumin", category: "Spices & Seasonings" },
-  { id: "pantry-006", name: "Curry Powder", category: "Spices & Seasonings" },
-  { id: "pantry-007", name: "Italian Seasoning", category: "Spices & Seasonings" },
-  { id: "pantry-008", name: "Chili Powder", category: "Spices & Seasonings" },
-  { id: "pantry-009", name: "Dried Oregano", category: "Spices & Seasonings" },
-
-  { id: "pantry-010", name: "Olive Oil", category: "Cooking Essentials" },
-  { id: "pantry-011", name: "Vegetable Oil", category: "Cooking Essentials" },
-  { id: "pantry-012", name: "Butter", category: "Cooking Essentials" },
-  { id: "pantry-013", name: "Vinegar", category: "Cooking Essentials" },
-  { id: "pantry-014", name: "Sesame Oil", category: "Cooking Essentials" },
+ },
 
   { id: "pantry-015", name: "Flour", category: "Pantry Staples" },
   { id: "pantry-016", name: "Sugar", category: "Pantry Staples" },

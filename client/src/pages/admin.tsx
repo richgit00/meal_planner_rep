@@ -413,37 +413,7 @@ export default function Admin() {
   };
 
 
-  const cleanupPantryMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/pantry-items/cleanup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to cleanup pantry items");
-      }
-
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Pantry Cleanup Complete",
-        description: `Removed ${data.removedItems} unused items. ${data.remainingItems} items remaining.`,
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/pantry-items"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Cleanup Failed",
-        description: error.message || "Failed to cleanup pantry items",
-        variant: "destructive",
-      });
-    },
-  });
+  
 
 
   if (isLoading) {
@@ -766,16 +736,7 @@ export default function Admin() {
             style={{ display: 'none' }}
           />
           
-          <Button 
-            onClick={() => cleanupPantryMutation.mutate()} 
-            variant="outline" 
-            className="w-full sm:w-auto text-sm text-orange-600 border-orange-600 hover:bg-orange-50"
-            disabled={cleanupPantryMutation.isPending}
-          >
-            <span className="mr-2">🧹</span>
-            <span className="hidden sm:inline">Clean Pantry</span>
-            <span className="sm:hidden">Clean Pantry</span>
-          </Button>
+          
         </div>
       </div>
 

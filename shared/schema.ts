@@ -22,12 +22,6 @@ export const mealPlans = pgTable("meal_plans", {
   meals: json("meals").$type<Array<{ day: string; mealId: string | null }>>().notNull(),
 });
 
-export const pantryItems = pgTable("pantry_items", {
-  id: varchar("id").primaryKey().notNull(),
-  name: text("name").notNull(),
-  category: text("category").notNull(),
-});
-
 export const insertMealSchema = createInsertSchema(meals, {
   utensils: z.array(z.string()).optional().default([]),
 }).omit({
@@ -38,15 +32,8 @@ export const insertMealPlanSchema = createInsertSchema(mealPlans).omit({
   id: true,
 });
 
-export const insertPantryItemSchema = createInsertSchema(pantryItems).omit({
-  id: true,
-});
-
 export type InsertMeal = z.infer<typeof insertMealSchema>;
 export type Meal = typeof meals.$inferSelect;
 
 export type InsertMealPlan = z.infer<typeof insertMealPlanSchema>;
 export type MealPlan = typeof mealPlans.$inferSelect;
-
-export type InsertPantryItem = z.infer<typeof insertPantryItemSchema>;
-export type PantryItem = typeof pantryItems.$inferSelect;
