@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, CheckCircle, ShoppingCart } from "lucide-react";
+import { CalendarDays, CheckCircle, ShoppingCart, Package } from "lucide-react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { type MealPlan } from "@shared/schema";
