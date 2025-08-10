@@ -10,7 +10,6 @@ export function Header() {
     { name: "Home", path: "/" },
     { name: "Meal Plan", path: "/meal-plan" },
     { name: "Shopping List", path: "/shopping-list" },
-    { name: "Pantry", path: "/pantry" },
     { name: "Admin", path: "/admin" },
   ];
 
