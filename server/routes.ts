@@ -2,9 +2,9 @@ import type { Express } from "express";
 import { randomUUID } from "crypto";
 
 import { db } from "./db";
-import { meals, mealPlans } from "@shared/schema";
-import { insertMealPlanSchema, insertMealSchema } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { meals, mealPlans, cookedMeals } from "@shared/schema";
+import { insertMealPlanSchema, insertMealSchema, insertCookedMealSchema } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<void> {
   // Meals
@@ -201,6 +201,43 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
 
+
+  // Cooked Meals
+  app.get("/api/cooked-meals/:weekStartDate", async (req, res) => {
+    try {
+      const cookedMealsData = await db.select().from(cookedMeals).where(eq(cookedMeals.weekStartDate, req.params.weekStartDate));
+      res.json(cookedMealsData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch cooked meals" });
+    }
+  });
+
+  app.post("/api/cooked-meals", async (req, res) => {
+    try {
+      const validated = insertCookedMealSchema.parse(req.body);
+      const cookedMealWithId = { ...validated, id: randomUUID() };
+      const [cookedMeal] = await db.insert(cookedMeals).values(cookedMealWithId).returning();
+      res.status(201).json(cookedMeal);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid cooked meal data" });
+    }
+  });
+
+  app.delete("/api/cooked-meals/:weekStartDate/:day/:mealId", async (req, res) => {
+    try {
+      const { weekStartDate, day, mealId } = req.params;
+      await db.delete(cookedMeals).where(
+        and(
+          eq(cookedMeals.weekStartDate, weekStartDate),
+          eq(cookedMeals.day, day),
+          eq(cookedMeals.mealId, mealId)
+        )
+      );
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete cooked meal" });
+    }
+  });
 
   // Shopping List Generation
   app.get("/api/shopping-list/:weekStartDate", async (req, res) => {

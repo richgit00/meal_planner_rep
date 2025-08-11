@@ -8,7 +8,7 @@ import { MealSelectionModal } from "@/components/meal-selection-modal";
 import { RecipeDetailModal } from "@/components/recipe-detail-modal";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { type Meal, type MealPlan } from "@shared/schema";
+import { type Meal, type MealPlan, type CookedMeal } from "@shared/schema";
 
 // Helper function to get week dates from a start date
 const getWeekDates = (weekStartDate: string) => {
@@ -79,7 +79,6 @@ export default function MealPlan() {
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
-  const [cookedMeals, setCookedMeals] = useState<Set<string>>(new Set());
 
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
@@ -87,6 +86,11 @@ export default function MealPlan() {
 
   const { data: mealPlan } = useQuery<MealPlan>({
     queryKey: ["/api/meal-plans", currentWeek],
+    retry: false,
+  });
+
+  const { data: cookedMealsData = [] } = useQuery<CookedMeal[]>({
+    queryKey: ["/api/cooked-meals", currentWeek],
     retry: false,
   });
 
@@ -117,6 +121,37 @@ export default function MealPlan() {
     onError: (error: any) => {
       console.error("Meal plan update failed:", error);
       toast({ title: "Failed to update meal plan", variant: "destructive" });
+    },
+  });
+
+  const markCookedMutation = useMutation({
+    mutationFn: async ({ weekStartDate, day, mealId }: { weekStartDate: string; day: string; mealId: string }) => {
+      return await apiRequest("POST", "/api/cooked-meals", {
+        weekStartDate,
+        day,
+        mealId,
+        cookedAt: new Date().toISOString(),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cooked-meals", currentWeek] });
+    },
+    onError: (error: any) => {
+      console.error("Mark cooked failed:", error);
+      toast({ title: "Failed to mark as cooked", variant: "destructive" });
+    },
+  });
+
+  const unmarkCookedMutation = useMutation({
+    mutationFn: async ({ weekStartDate, day, mealId }: { weekStartDate: string; day: string; mealId: string }) => {
+      return await apiRequest("DELETE", `/api/cooked-meals/${weekStartDate}/${day}/${mealId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/cooked-meals", currentWeek] });
+    },
+    onError: (error: any) => {
+      console.error("Unmark cooked failed:", error);
+      toast({ title: "Failed to unmark as cooked", variant: "destructive" });
     },
   });
 
@@ -175,7 +210,6 @@ export default function MealPlan() {
     const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
     if (newWeek >= earliestWeek) {
       setCurrentWeek(newWeek);
-      setCookedMeals(new Set()); // Reset cooked status when changing weeks
     }
   };
 
@@ -184,23 +218,33 @@ export default function MealPlan() {
     const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
     if (newWeek <= latestWeek) {
       setCurrentWeek(newWeek);
-      setCookedMeals(new Set()); // Reset cooked status when changing weeks
     }
   };
 
-  const toggleCookedStatus = (dayName: string, mealId: string) => {
-    const cookedKey = `${dayName}-${mealId}`;
-    const newCookedMeals = new Set(cookedMeals);
+  const isCooked = (dayName: string, mealId: string) => {
+    return cookedMealsData.some(cooked => 
+      cooked.day === dayName && cooked.mealId === mealId
+    );
+  };
 
-    if (cookedMeals.has(cookedKey)) {
-      newCookedMeals.delete(cookedKey);
+  const toggleCookedStatus = (dayName: string, mealId: string) => {
+    const cookedStatus = isCooked(dayName, mealId);
+
+    if (cookedStatus) {
+      unmarkCookedMutation.mutate({ 
+        weekStartDate: currentWeek, 
+        day: dayName, 
+        mealId 
+      });
       toast({ title: "Marked as not cooked" });
     } else {
-      newCookedMeals.add(cookedKey);
+      markCookedMutation.mutate({ 
+        weekStartDate: currentWeek, 
+        day: dayName, 
+        mealId 
+      });
       toast({ title: "Marked as cooked! 🍽️" });
     }
-
-    setCookedMeals(newCookedMeals);
   };
 
   // Check if navigation buttons should be disabled
@@ -296,11 +340,11 @@ export default function MealPlan() {
                           src={meal.image}
                           alt={meal.name}
                           className={`w-full h-20 object-cover rounded-lg transition-opacity ${
-                            cookedMeals.has(`${day.name}-${meal.id}`) ? 'opacity-60' : ''
+                            isCooked(day.name, meal.id) ? 'opacity-60' : ''
                           }`}
                         />
                         <h4 className={`font-medium text-sm ${
-                          cookedMeals.has(`${day.name}-${meal.id}`) ? 'text-slate-500 line-through' : 'text-slate-800'
+                          isCooked(day.name, meal.id) ? 'text-slate-500 line-through' : 'text-slate-800'
                         }`}>
                           {meal.name}
                         </h4>
@@ -308,9 +352,9 @@ export default function MealPlan() {
                       </div>
                       <Button
                         size="sm"
-                        variant={cookedMeals.has(`${day.name}-${meal.id}`) ? "default" : "outline"}
+                        variant={isCooked(day.name, meal.id) ? "default" : "outline"}
                         className={`w-full text-xs ${
-                          cookedMeals.has(`${day.name}-${meal.id}`) 
+                          isCooked(day.name, meal.id) 
                             ? 'bg-green-600 hover:bg-green-700 text-white' 
                             : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
                         }`}
@@ -320,7 +364,7 @@ export default function MealPlan() {
                         }}
                       >
                         <Check className="h-3 w-3 mr-1" />
-                        {cookedMeals.has(`${day.name}-${meal.id}`) ? 'Cooked!' : 'Mark Cooked'}
+                        {isCooked(day.name, meal.id) ? 'Cooked!' : 'Mark Cooked'}
                       </Button>
                     </div>
                   ) : (
