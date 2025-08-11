@@ -68,29 +68,36 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
               <h3 className="text-lg font-semibold text-slate-700 mb-4 border-b border-slate-200 pb-2">
                 {proteinType}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {groupedMeals[proteinType].map((meal) => (
-                  <div
-                    key={meal.id}
-                    onClick={() => {
-                      onSelectMeal(meal);
-                      onOpenChange(false);
-                    }}
-                    className="meal-option bg-slate-50 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-primary border-2 border-transparent transition-colours duration-200"
-                  >
-                    <img
-                      src={meal.image}
-                      alt={meal.name}
-                      className="w-full h-32 object-cover rounded-lg mb-3"
-                    />
-                    <h4 className="font-medium text-slate-800 mb-1">{meal.name}</h4>
-                    <p className="text-sm text-slate-500 mb-2">{meal.description}</p>
-                    <div className="flex justify-between items-center text-xs text-slate-500">
-                      <span>{meal.cookTime}</span>
-                      <span>{meal.difficulty}</span>
+              <div className="overflow-x-auto">
+                <div className="flex gap-4 pb-2" style={{ minWidth: 'max-content' }}>
+                  {groupedMeals[proteinType].map((meal) => (
+                    <div
+                      key={meal.id}
+                      onClick={() => {
+                        onSelectMeal(meal);
+                        onOpenChange(false);
+                      }}
+                      className="meal-option bg-slate-50 rounded-lg p-4 cursor-pointer hover:bg-blue-50 hover:border-primary border-2 border-transparent transition-colors duration-200 flex-shrink-0"
+                      style={{ width: '280px' }}
+                    >
+                      <img
+                        src={meal.image}
+                        alt={meal.name}
+                        className="w-full h-32 object-cover rounded-lg mb-3"
+                      />
+                      <h4 className="font-medium text-slate-800 mb-1 truncate">{meal.name}</h4>
+                      <p className="text-sm text-slate-500 mb-2 overflow-hidden" style={{ 
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                      }}>{meal.description}</p>
+                      <div className="flex justify-between items-center text-xs text-slate-500">
+                        <span>{meal.cookTime}</span>
+                        <span>{meal.difficulty}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           ))}
