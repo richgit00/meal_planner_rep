@@ -217,18 +217,39 @@ export async function registerRoutes(app: Express): Promise<void> {
 
   app.post("/api/cooked-meals", async (req, res) => {
     try {
-      console.log("📥 Received cooked meal data:", req.body);
+      console.log("📥 Received cooked meal data:", JSON.stringify(req.body, null, 2));
       const validated = insertCookedMealSchema.parse(req.body);
-      console.log("✅ Parsed cooked meal:", validated);
+      console.log("✅ Parsed cooked meal:", JSON.stringify(validated, null, 2));
       const cookedMealWithId = { ...validated, id: randomUUID() };
-      console.log("🆔 Adding ID to cooked meal:", cookedMealWithId);
+      console.log("🆔 Adding ID to cooked meal:", JSON.stringify(cookedMealWithId, null, 2));
+      
+      // Check if record already exists
+      const existing = await db.select().from(cookedMeals).where(
+        and(
+          eq(cookedMeals.weekStartDate, cookedMealWithId.weekStartDate),
+          eq(cookedMeals.day, cookedMealWithId.day),
+          eq(cookedMeals.mealId, cookedMealWithId.mealId)
+        )
+      );
+      console.log("🔍 Existing records check:", existing.length, "found");
+      
+      if (existing.length > 0) {
+        console.log("⚠️ Record already exists, returning existing:", existing[0]);
+        return res.status(200).json(existing[0]);
+      }
+      
       const [cookedMeal] = await db.insert(cookedMeals).values(cookedMealWithId).returning();
-      console.log("💾 Database insert result:", cookedMeal);
+      console.log("💾 Database insert result:", JSON.stringify(cookedMeal, null, 2));
+      
+      // Verify insertion by querying back
+      const verification = await db.select().from(cookedMeals).where(eq(cookedMeals.id, cookedMeal.id));
+      console.log("🔍 Verification query result:", verification.length, "records");
+      
       res.status(201).json(cookedMeal);
     } catch (error) {
       console.error("❌ Failed to insert cooked meal:", error);
-      console.error("🔍 Error details:", error);
-      res.status(400).json({ message: "Invalid cooked meal data" });
+      console.error("🔍 Error details:", JSON.stringify(error, null, 2));
+      res.status(400).json({ message: "Invalid cooked meal data", error: error.message });
     }
   });
 
