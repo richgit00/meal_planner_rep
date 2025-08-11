@@ -205,20 +205,29 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Cooked Meals
   app.get("/api/cooked-meals/:weekStartDate", async (req, res) => {
     try {
+      console.log("🔍 Fetching cooked meals for week:", req.params.weekStartDate);
       const cookedMealsData = await db.select().from(cookedMeals).where(eq(cookedMeals.weekStartDate, req.params.weekStartDate));
+      console.log("📊 Found cooked meals:", cookedMealsData.length, "records:", cookedMealsData);
       res.json(cookedMealsData);
     } catch (error) {
+      console.error("❌ Failed to fetch cooked meals:", error);
       res.status(500).json({ message: "Failed to fetch cooked meals" });
     }
   });
 
   app.post("/api/cooked-meals", async (req, res) => {
     try {
+      console.log("📥 Received cooked meal data:", req.body);
       const validated = insertCookedMealSchema.parse(req.body);
+      console.log("✅ Parsed cooked meal:", validated);
       const cookedMealWithId = { ...validated, id: randomUUID() };
+      console.log("🆔 Adding ID to cooked meal:", cookedMealWithId);
       const [cookedMeal] = await db.insert(cookedMeals).values(cookedMealWithId).returning();
+      console.log("💾 Database insert result:", cookedMeal);
       res.status(201).json(cookedMeal);
     } catch (error) {
+      console.error("❌ Failed to insert cooked meal:", error);
+      console.error("🔍 Error details:", error);
       res.status(400).json({ message: "Invalid cooked meal data" });
     }
   });
