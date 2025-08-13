@@ -13,7 +13,7 @@ export const meals = pgTable("meals", {
   image: text("image").notNull(),
   ingredients: json("ingredients").$type<Array<{ name: string; amount: string; category: string }>>().notNull(),
   instructions: json("instructions").$type<Array<string>>().notNull(),
-  utensils: json("utensils").$type<Array<string>>().notNull(),
+  utensils: json("utensils").$type<Array<string>>().notNull().default([]),
 });
 
 export const mealPlans = pgTable("meal_plans", {
