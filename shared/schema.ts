@@ -11,15 +11,15 @@ export const meals = pgTable("meals", {
   difficulty: text("difficulty").notNull(),
   servings: integer("servings").notNull(),
   image: text("image").notNull(),
-  ingredients: json("ingredients").$type<Array<{ name: string; amount: string; category: string }>>().notNull(),
-  instructions: json("instructions").$type<Array<string>>().notNull(),
+  ingredients: json("ingredients").$type<Array<{ name: string; amount: string; category: string }>>().notNull().default([]),
+  instructions: json("instructions").$type<Array<string>>().notNull().default([]),
   utensils: json("utensils").$type<Array<string>>().notNull().default([]),
 });
 
 export const mealPlans = pgTable("meal_plans", {
   id: varchar("id").primaryKey().notNull(),
   weekStartDate: text("week_start_date").notNull(),
-  meals: json("meals").$type<Array<{ day: string; mealId: string | null }>>().notNull(),
+  meals: json("meals").$type<Array<{ day: string; mealId: string | null }>>().notNull().default([]),
 });
 
 export const cookedMeals = pgTable("cooked_meals", {
@@ -31,6 +31,8 @@ export const cookedMeals = pgTable("cooked_meals", {
 });
 
 export const insertMealSchema = createInsertSchema(meals, {
+  ingredients: z.array(z.object({ name: z.string(), amount: z.string(), category: z.string() })).optional().default([]),
+  instructions: z.array(z.string()).optional().default([]),
   utensils: z.array(z.string()).optional().default([]),
 }).omit({
   id: true,
