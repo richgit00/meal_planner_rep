@@ -339,7 +339,7 @@ export default function MealPlan() {
                         <img
                           src={meal.image}
                           alt={meal.name}
-                          className={`w-full h-20 object-cover rounded-lg transition-opacity ${
+                          className={`w-full h-24 object-cover rounded-lg transition-opacity ${
                             isCooked(day.name, meal.id) ? 'opacity-60' : ''
                           }`}
                         />
@@ -353,7 +353,7 @@ export default function MealPlan() {
                       <Button
                         size="sm"
                         variant={isCooked(day.name, meal.id) ? "default" : "outline"}
-                        className={`w-full text-xs ${
+                        className={`text-xs px-2 py-1 h-7 ${
                           isCooked(day.name, meal.id) 
                             ? 'bg-green-600 hover:bg-green-700 text-white' 
                             : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
