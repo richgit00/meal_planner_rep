@@ -14,31 +14,52 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
     const name = meal.name.toLowerCase();
     const ingredientsText = meal.ingredients?.map(ing => ing.name.toLowerCase()).join(' ') || '';
     
-    if (name.includes('beef') || ingredientsText.includes('beef') || name.includes('steak') || ingredientsText.includes('steak')) {
+    // Check meal name first (more reliable)
+    if (name.includes('beef') || name.includes('steak') || name.includes('mince') || name.includes('ground beef')) {
       return 'Beef';
     }
-    if (name.includes('chicken') || ingredientsText.includes('chicken')) {
+    if (name.includes('chicken') || name.includes('chook')) {
       return 'Chicken';
     }
-    if (name.includes('pork') || ingredientsText.includes('pork') || name.includes('ham') || ingredientsText.includes('ham')) {
+    if (name.includes('pork') || name.includes('ham') || name.includes('bacon') || name.includes('sausage')) {
       return 'Pork';
     }
     if (name.includes('salmon') || name.includes('fish') || name.includes('cod') || name.includes('tuna') || 
-        ingredientsText.includes('salmon') || ingredientsText.includes('fish') || ingredientsText.includes('cod')) {
+        name.includes('seafood') || name.includes('prawn') || name.includes('barramundi')) {
       return 'Fish';
     }
-    if (name.includes('turkey') || ingredientsText.includes('turkey')) {
+    if (name.includes('turkey')) {
       return 'Turkey';
     }
-    if (name.includes('lamb') || ingredientsText.includes('lamb')) {
+    if (name.includes('lamb') || name.includes('mutton')) {
       return 'Lamb';
     }
     if (name.includes('vegetable') || name.includes('vegan') || name.includes('veggie') || 
-        (!ingredientsText.includes('chicken') && !ingredientsText.includes('beef') && 
-         !ingredientsText.includes('pork') && !ingredientsText.includes('fish') && 
-         !ingredientsText.includes('salmon') && !ingredientsText.includes('turkey'))) {
+        name.includes('mushroom') || name.includes('tofu') || name.includes('lentil') || name.includes('bean')) {
       return 'Vegetarian';
     }
+    
+    // Fall back to ingredients only if name doesn't give clear indication
+    if (ingredientsText.includes('beef') || ingredientsText.includes('steak') || ingredientsText.includes('mince')) {
+      return 'Beef';
+    }
+    if (ingredientsText.includes('chicken')) {
+      return 'Chicken';
+    }
+    if (ingredientsText.includes('pork') || ingredientsText.includes('ham') || ingredientsText.includes('bacon')) {
+      return 'Pork';
+    }
+    if (ingredientsText.includes('salmon') || ingredientsText.includes('fish') || ingredientsText.includes('cod') || 
+        ingredientsText.includes('tuna') || ingredientsText.includes('seafood')) {
+      return 'Fish';
+    }
+    if (ingredientsText.includes('turkey')) {
+      return 'Turkey';
+    }
+    if (ingredientsText.includes('lamb')) {
+      return 'Lamb';
+    }
+    
     return 'Other';
   };
 
