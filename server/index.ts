@@ -59,6 +59,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// --- Health check endpoint for UptimeRobot ---
+app.get("/health", (_req, res) => {
+  // Keep this super fast: no DB calls
+  res.status(200).type("text/plain").send("OK");
+});
+
 (async () => {
   // Seed database on startup with error handling
   try {
