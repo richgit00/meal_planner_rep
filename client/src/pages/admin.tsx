@@ -237,7 +237,7 @@ export default function Admin() {
   const getProteinType = (meal: Meal): string => {
     const name = meal.name.toLowerCase();
     const ingredientsText = meal.ingredients?.map(ing => ing.name.toLowerCase()).join(' ') || '';
-    
+
     // Check meal name first (more reliable)
     if (name.includes('beef') || name.includes('steak') || name.includes('mince') || name.includes('ground beef')) {
       return 'Beef';
@@ -262,7 +262,7 @@ export default function Admin() {
         name.includes('mushroom') || name.includes('tofu') || name.includes('lentil') || name.includes('bean')) {
       return 'Vegetarian';
     }
-    
+
     // Fall back to ingredients only if name doesn't give clear indication
     if (ingredientsText.includes('beef') || ingredientsText.includes('steak') || ingredientsText.includes('mince')) {
       return 'Beef';
@@ -283,7 +283,7 @@ export default function Admin() {
     if (ingredientsText.includes('lamb')) {
       return 'Lamb';
     }
-    
+
     return 'Other';
   };
 
@@ -297,8 +297,16 @@ export default function Admin() {
     return groups;
   }, {} as Record<string, Meal[]>);
 
-  // Define the order of protein types
-  const proteinOrder = ['Beef', 'Chicken', 'Pork', 'Fish', 'Turkey', 'Lamb', 'Vegetarian', 'Other'];
+  // Combine Other into Vegetarian category and define the order of protein types
+  if (groupedMeals['Other']) {
+    if (!groupedMeals['Vegetarian']) {
+      groupedMeals['Vegetarian'] = [];
+    }
+    groupedMeals['Vegetarian'].push(...groupedMeals['Other']);
+    delete groupedMeals['Other'];
+  }
+
+  const proteinOrder = ['Beef', 'Chicken', 'Pork', 'Lamb', 'Fish', 'Vegetarian'];
   const sortedGroups = proteinOrder.filter(type => groupedMeals[type]);
 
   const downloadCSVTemplate = () => {
@@ -434,7 +442,7 @@ export default function Admin() {
   };
 
 
-  
+
 
 
   if (isLoading) {
@@ -453,7 +461,7 @@ export default function Admin() {
           <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Meal Administration</h2>
           <p className="text-sm sm:text-base text-slate-600 mt-1">Manage your meal collection</p>
         </div>
-        
+
         {/* Action Buttons */}
         <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-2">
           {/* Primary Action - Add Meal */}
@@ -726,7 +734,7 @@ export default function Admin() {
             </DialogContent>
           </Dialog>
         </div>
-        
+
         {/* Secondary Actions - Mobile: Stack, Desktop: Row */}
         <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2 mt-3 sm:mt-2">
           <Button 
@@ -738,7 +746,7 @@ export default function Admin() {
             <span className="hidden sm:inline">Download CSV Template</span>
             <span className="sm:hidden">Download Template</span>
           </Button>
-          
+
           <Button 
             onClick={handleCSVImport} 
             variant="outline"
@@ -748,7 +756,7 @@ export default function Admin() {
             <span className="hidden sm:inline">Import CSV</span>
             <span className="sm:hidden">Import CSV</span>
           </Button>
-          
+
           <input
             ref={csvFileInputRef}
             type="file"
@@ -756,8 +764,8 @@ export default function Admin() {
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-          
-          
+
+
         </div>
       </div>
 

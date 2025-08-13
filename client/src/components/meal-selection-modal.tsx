@@ -13,7 +13,7 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
   const getProteinType = (meal: Meal): string => {
     const name = meal.name.toLowerCase();
     const ingredientsText = meal.ingredients?.map(ing => ing.name.toLowerCase()).join(' ') || '';
-    
+
     // Check meal name first (more reliable)
     if (name.includes('beef') || name.includes('steak') || name.includes('mince') || name.includes('ground beef')) {
       return 'Beef';
@@ -38,7 +38,7 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
         name.includes('mushroom') || name.includes('tofu') || name.includes('lentil') || name.includes('bean')) {
       return 'Vegetarian';
     }
-    
+
     // Fall back to ingredients only if name doesn't give clear indication
     if (ingredientsText.includes('beef') || ingredientsText.includes('steak') || ingredientsText.includes('mince')) {
       return 'Beef';
@@ -59,7 +59,7 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
     if (ingredientsText.includes('lamb')) {
       return 'Lamb';
     }
-    
+
     return 'Other';
   };
 
@@ -73,8 +73,17 @@ export function MealSelectionModal({ open, onOpenChange, meals, onSelectMeal }: 
     return groups;
   }, {} as Record<string, Meal[]>);
 
+  // Combine Other into Vegetarian category
+  if (groupedMeals['Other']) {
+    if (!groupedMeals['Vegetarian']) {
+      groupedMeals['Vegetarian'] = [];
+    }
+    groupedMeals['Vegetarian'].push(...groupedMeals['Other']);
+    delete groupedMeals['Other'];
+  }
+
   // Define the order of protein types
-  const proteinOrder = ['Beef', 'Chicken', 'Pork', 'Fish', 'Turkey', 'Lamb', 'Vegetarian', 'Other'];
+  const proteinOrder = ['Beef', 'Chicken', 'Pork', 'Lamb', 'Fish', 'Vegetarian'];
   const sortedGroups = proteinOrder.filter(type => groupedMeals[type]);
 
   return (
