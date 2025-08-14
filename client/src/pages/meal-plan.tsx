@@ -10,21 +10,41 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { type Meal, type MealPlan, type CookedMeal } from "@shared/schema";
 
-// Helper function to get week dates from a start date
+/* ----------------------------- Utilities ----------------------------- */
+
+// Format a Date as YYYY-MM-DD in LOCAL time (no timezone shift)
+function ymdLocal(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// Small fetch helper that throws on non-2xx
+const fetchJSON = async <T,>(url: string): Promise<T> => {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status} fetching ${url}`);
+  return r.json();
+};
+
+/* ------------------------- Week/Date helpers ------------------------- */
+
+// Helper function to get week dates from a start date (display only)
 const getWeekDates = (weekStartDate: string) => {
   const startDate = new Date(weekStartDate);
-  const days = [];
+  const days: { name: string; date: string }[] = [];
 
   for (let i = 0; i < 7; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + i);
 
-    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthNames = [
+      "January","February","March","April","May","June",
+      "July","August","September","October","November","December"
+    ];
 
-    // Adjust for Monday start
-    const dayIndex = (date.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
-    const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][i];
+    // Fixed Monday-first labels
+    const dayName = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i];
 
     days.push({
       name: dayName,
@@ -35,41 +55,47 @@ const getWeekDates = (weekStartDate: string) => {
   return days;
 };
 
-// Helper function to format week range for display
+// Helper to format week range for display
 const formatWeekRange = (weekStartDate: string) => {
   const startDate = new Date(weekStartDate);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 6);
 
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthNames = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
 
   const startMonth = monthNames[startDate.getMonth()];
   const endMonth = monthNames[endDate.getMonth()];
   const startDay = startDate.getDate();
   const endDay = endDate.getDate();
 
-  if (startMonth === endMonth) {
-    return `${startMonth} ${startDay}-${endDay}`;
-  } else {
-    return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
-  }
+  return startMonth === endMonth
+    ? `${startMonth} ${startDay}-${endDay}`
+    : `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
 };
 
-// Helper functions for week navigation
+// Add/subtract full weeks; normalise to midday to avoid DST rollovers
 const addWeeks = (dateString: string, weeks: number) => {
   const date = new Date(dateString);
-  date.setDate(date.getDate() + (weeks * 7));
-  return date.toISOString().split('T')[0];
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + weeks * 7);
+  return ymdLocal(date);
 };
 
-// Helper function to get the current week's Monday
+// Get the current week's Monday in LOCAL time
 const getCurrentWeekMonday = () => {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
-  const monday = new Date(today.setDate(diff));
-  return monday.toISOString().split('T')[0];
+  today.setHours(12, 0, 0, 0); // avoid DST/clock edges
+  const dayOfWeek = today.getDay(); // Sun=0, Mon=1, ... Sat=6
+  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // move back to Monday
+  const monday = new Date(today);
+  monday.setDate(diff);
+  return ymdLocal(monday);
 };
+
+/* ------------------------------ Component ------------------------------ */
 
 export default function MealPlan() {
   const { toast } = useToast();
@@ -80,23 +106,34 @@ export default function MealPlan() {
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
 
+  // Debug: ensure we're anchored to Monday locally (e.g., 2025-08-11)
+  // console.log("Computed currentWeek (local):", currentWeek);
+
+  /* ------------------------------ Queries ------------------------------ */
+
   const { data: meals = [], isLoading: mealsLoading } = useQuery<Meal[]>({
     queryKey: ["/api/meals"],
+    queryFn: () => fetchJSON<Meal[]>("/api/meals"),
   });
 
+  // IMPORTANT: include currentWeek in the actual request, not just the key
+  // If your API uses querystring instead, switch to `/api/meal-plans?week=${currentWeek}`
   const { data: mealPlan } = useQuery<MealPlan>({
     queryKey: ["/api/meal-plans", currentWeek],
+    queryFn: () => fetchJSON<MealPlan>(`/api/meal-plans/${currentWeek}`),
     retry: false,
   });
 
   const { data: cookedMealsData = [] } = useQuery<CookedMeal[]>({
     queryKey: ["/api/cooked-meals", currentWeek],
+    queryFn: () => fetchJSON<CookedMeal[]>(`/api/cooked-meals/${currentWeek}`),
     retry: false,
   });
 
+  /* ----------------------------- Mutations ----------------------------- */
+
   const createMealPlanMutation = useMutation({
     mutationFn: async (newMealPlan: { weekStartDate: string; meals: Array<{ day: string; mealId: string | null }> }) => {
-      console.log("Creating meal plan:", newMealPlan);
       return await apiRequest("POST", "/api/meal-plans", newMealPlan);
     },
     onSuccess: () => {
@@ -111,7 +148,6 @@ export default function MealPlan() {
 
   const updateMealPlanMutation = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string; meals: Array<{ day: string; mealId: string | null }> }) => {
-      console.log("Updating meal plan:", { id, updates });
       return await apiRequest("PUT", `/api/meal-plans/${id}`, updates);
     },
     onSuccess: () => {
@@ -130,7 +166,7 @@ export default function MealPlan() {
         weekStartDate,
         day,
         mealId,
-        cookedAt: new Date().toISOString(),
+        cookedAt: new Date().toISOString(), // timestamp OK in UTC for events
       });
     },
     onSuccess: () => {
@@ -155,8 +191,12 @@ export default function MealPlan() {
     },
   });
 
+  /* --------------------------- Derived state --------------------------- */
+
   const weekDays = getWeekDates(currentWeek);
-  const currentMeals = mealPlan?.meals || weekDays.map(day => ({ day: day.name, mealId: null }));
+  const currentMeals = mealPlan?.meals || weekDays.map((day) => ({ day: day.name, mealId: null }));
+
+  /* ------------------------------ Handlers ----------------------------- */
 
   const handleDayClick = (dayName: string) => {
     setSelectedDay(dayName);
@@ -166,7 +206,7 @@ export default function MealPlan() {
   const handleMealSelect = (meal: Meal) => {
     if (!selectedDay) return;
 
-    const updatedMeals = currentMeals.map(dayMeal =>
+    const updatedMeals = currentMeals.map((dayMeal) =>
       dayMeal.day === selectedDay ? { ...dayMeal, mealId: meal.id } : dayMeal
     );
 
@@ -174,14 +214,14 @@ export default function MealPlan() {
       updateMealPlanMutation.mutate({ id: mealPlan.id, meals: updatedMeals });
     } else {
       createMealPlanMutation.mutate({
-        weekStartDate: currentWeek,
+        weekStartDate: currentWeek, // TEXT column expects "YYYY-MM-DD"
         meals: updatedMeals,
       });
     }
   };
 
   const handleMealClick = (mealId: string) => {
-    const meal = meals.find(m => m.id === mealId);
+    const meal = meals.find((m) => m.id === mealId);
     if (meal) {
       setSelectedMeal(meal);
       setShowRecipeModal(true);
@@ -189,7 +229,7 @@ export default function MealPlan() {
   };
 
   const handleMealDelete = (dayName: string) => {
-    const updatedMeals = currentMeals.map(dayMeal =>
+    const updatedMeals = currentMeals.map((dayMeal) =>
       dayMeal.day === dayName ? { ...dayMeal, mealId: null } : dayMeal
     );
 
@@ -203,80 +243,60 @@ export default function MealPlan() {
     }
   };
 
-
-
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
     const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
-    if (newWeek >= earliestWeek) {
-      setCurrentWeek(newWeek);
-    }
+    if (newWeek >= earliestWeek) setCurrentWeek(newWeek);
   };
 
   const goToNextWeek = () => {
     const newWeek = addWeeks(currentWeek, 1);
     const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
-    if (newWeek <= latestWeek) {
-      setCurrentWeek(newWeek);
-    }
+    if (newWeek <= latestWeek) setCurrentWeek(newWeek);
   };
 
-  const isCooked = (dayName: string, mealId: string) => {
-    return cookedMealsData.some(cooked => 
-      cooked.day === dayName && cooked.mealId === mealId
-    );
-  };
+  const isCooked = (dayName: string, mealId: string) =>
+    cookedMealsData.some((cooked) => cooked.day === dayName && cooked.mealId === mealId);
 
   const toggleCookedStatus = (dayName: string, mealId: string) => {
     const cookedStatus = isCooked(dayName, mealId);
 
     if (cookedStatus) {
-      unmarkCookedMutation.mutate({ 
-        weekStartDate: currentWeek, 
-        day: dayName, 
-        mealId 
-      });
+      unmarkCookedMutation.mutate({ weekStartDate: currentWeek, day: dayName, mealId });
       toast({ title: "Marked as not cooked" });
     } else {
-      markCookedMutation.mutate({ 
-        weekStartDate: currentWeek, 
-        day: dayName, 
-        mealId 
-      });
+      markCookedMutation.mutate({ weekStartDate: currentWeek, day: dayName, mealId });
       toast({ title: "Marked as cooked! 🍽️" });
     }
   };
 
-  // Check if navigation buttons should be disabled
   const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
   const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
 
   const handleGenerateShoppingList = async () => {
-    // Check if there are any meals planned for the week
-    const hasPlannedMeals = currentMeals.some(dayMeal => dayMeal.mealId);
-
+    const hasPlannedMeals = currentMeals.some((dayMeal) => dayMeal.mealId);
     if (!hasPlannedMeals) {
-      toast({ 
-        title: "No meals planned", 
+      toast({
+        title: "No meals planned",
         description: "Please add some meals to your weekly plan first.",
-        variant: "destructive" 
+        variant: "destructive",
       });
       return;
     }
 
-    // Clear all caches and refetch meal plan data first
+    // Clear caches and ensure fresh data
     queryClient.removeQueries({ queryKey: ["/api/meal-plans"] });
     queryClient.removeQueries({ queryKey: ["/api/shopping-list"] });
 
-    // Wait for fresh meal plan data before navigating
     await queryClient.prefetchQuery({
       queryKey: ["/api/meal-plans", currentWeek],
-      queryFn: () => fetch(`/api/meal-plans/${currentWeek}`).then(r => r.json())
+      queryFn: () => fetchJSON<MealPlan>(`/api/meal-plans/${currentWeek}`),
     });
 
-    // Navigate to shopping list page with current week parameter
     setLocation(`/shopping-list?week=${currentWeek}`);
   };
+
+  /* ------------------------------ Render ------------------------------- */
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -295,15 +315,17 @@ export default function MealPlan() {
               <ChevronRight className="h-4 w-4 ml-1 sm:ml-2" />
             </Button>
           </div>
-          <span className="text-sm sm:text-lg font-medium text-slate-800 text-center sm:text-left min-w-0 flex-shrink-0">{formatWeekRange(currentWeek)}</span>
+          <span className="text-sm sm:text-lg font-medium text-slate-800 text-center sm:text-left min-w-0 flex-shrink-0">
+            {formatWeekRange(currentWeek)}
+          </span>
         </div>
       </div>
 
       {/* Weekly Calendar Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 mb-8">
-        {weekDays.map((day) => {
-          const dayMeal = currentMeals.find(m => m.day === day.name);
-          const meal = dayMeal?.mealId ? meals.find(m => m.id === dayMeal.mealId) : null;
+        {getWeekDates(currentWeek).map((day) => {
+          const dayMeal = currentMeals.find((m) => m.day === day.name);
+          const meal = dayMeal?.mealId ? meals.find((m) => m.id === dayMeal.mealId) : null;
 
           return (
             <Card key={day.name}>
@@ -340,12 +362,14 @@ export default function MealPlan() {
                           src={meal.image}
                           alt={meal.name}
                           className={`w-full h-24 object-cover rounded-lg transition-opacity ${
-                            isCooked(day.name, meal.id) ? 'opacity-60' : ''
+                            isCooked(day.name, meal.id) ? "opacity-60" : ""
                           }`}
                         />
-                        <h4 className={`font-medium text-sm ${
-                          isCooked(day.name, meal.id) ? 'text-slate-500 line-through' : 'text-slate-800'
-                        }`}>
+                        <h4
+                          className={`font-medium text-sm ${
+                            isCooked(day.name, meal.id) ? "text-slate-500 line-through" : "text-slate-800"
+                          }`}
+                        >
                           {meal.name}
                         </h4>
                         <p className="text-xs text-slate-500">{meal.cookTime}</p>
@@ -354,9 +378,9 @@ export default function MealPlan() {
                         size="sm"
                         variant={isCooked(day.name, meal.id) ? "default" : "outline"}
                         className={`text-xs px-2 py-1 h-7 ${
-                          isCooked(day.name, meal.id) 
-                            ? 'bg-green-600 hover:bg-green-700 text-white' 
-                            : 'hover:bg-green-50 hover:text-green-700 hover:border-green-300'
+                          isCooked(day.name, meal.id)
+                            ? "bg-green-600 hover:bg-green-700 text-white"
+                            : "hover:bg-green-50 hover:text-green-700 hover:border-green-300"
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -364,7 +388,7 @@ export default function MealPlan() {
                         }}
                       >
                         <Check className="h-3 w-3 mr-1" />
-                        {isCooked(day.name, meal.id) ? 'Cooked!' : 'Mark Cooked'}
+                        {isCooked(day.name, meal.id) ? "Cooked!" : "Mark Cooked"}
                       </Button>
                     </div>
                   ) : (
@@ -382,8 +406,8 @@ export default function MealPlan() {
 
       {/* Action Buttons */}
       <div className="flex justify-center">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="bg-accent text-white hover:bg-emerald-600"
           onClick={handleGenerateShoppingList}
         >
