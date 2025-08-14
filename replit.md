@@ -1,4 +1,4 @@
-# MealPlanner Pro - Replit.md
+# MealPlanner Pro 
 
 ## Overview
 
@@ -92,7 +92,7 @@ The application provides multiple ways to manage the 25+ recipe database:
 
 ## Deployment Strategy
 
-The application is configured for deployment on Replit with the following approach:
+The application is configured for deployment on Render with the following approach:
 
 1. **Development**: Uses Vite dev server with hot module replacement
 2. **Build Process**: 

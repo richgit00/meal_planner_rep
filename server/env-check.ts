@@ -11,8 +11,7 @@ export function validateEnvironment() {
     console.error('1. Check your .env file exists');
     console.error('2. Ensure DATABASE_URL is set in format:');
     console.error('   postgresql://postgres:password@host:6543/postgres');
-    console.error('3. For Replit: Use Secrets tab to set DATABASE_URL');
-    console.error('4. For Render: Set DATABASE_URL in environment variables');
+    console.error('3. For Render: Set DATABASE_URL in environment variables');
     return false;
   }
   
