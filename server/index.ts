@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { db } from './db';          // your Drizzle db instance
 import { meals } from '@shared/schema';  // your meals table schema
 
