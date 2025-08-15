@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, Share2, Leaf, Package, Fish, Wheat, Apple, ChefHat, ShoppingBasket, Milk, Beef } from "lucide-react";
+import { ChevronLeft, ChevronRight, Share2, Leaf, Wheat, Apple, ChefHat, ShoppingBasket, Milk, Beef } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -19,6 +19,38 @@ interface ShoppingListData {
     totalItems: number;
   };
 }
+
+/* ------------------------- Date helpers (local) ------------------------- */
+
+// Format a Date as YYYY-MM-DD in LOCAL time (no timezone shift)
+function ymdLocal(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// Helper function to get the current week's Monday (LOCAL, week starts Monday)
+const getCurrentWeekMonday = () => {
+  const today = new Date();
+  // Normalise to midday to avoid DST edges shifting the date
+  today.setHours(12, 0, 0, 0);
+  const dayOfWeek = today.getDay(); // Sun=0, Mon=1, ... Sat=6
+  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // move back to Monday
+  const monday = new Date(today);
+  monday.setDate(diff);
+  return ymdLocal(monday);
+};
+
+// Helper functions for week navigation (LOCAL)
+const addWeeks = (dateString: string, weeks: number) => {
+  const date = new Date(dateString);
+  date.setHours(12, 0, 0, 0); // avoid DST rollovers
+  date.setDate(date.getDate() + (weeks * 7));
+  return ymdLocal(date);
+};
+
+/* ------------------------- UI/date formatting -------------------------- */
 
 // Helper function to format week range for display
 const formatWeekRange = (weekStartDate: string) => {
@@ -40,30 +72,17 @@ const formatWeekRange = (weekStartDate: string) => {
   }
 };
 
-// Helper functions for week navigation
-const addWeeks = (dateString: string, weeks: number) => {
-  const date = new Date(dateString);
-  date.setDate(date.getDate() + (weeks * 7));
-  return date.toISOString().split('T')[0];
-};
+/* ------------------------- Icons / categories -------------------------- */
 
-// Helper function to get the current week's Monday
-const getCurrentWeekMonday = () => {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust when day is Sunday
-  const monday = new Date(today.setDate(diff));
-  return monday.toISOString().split('T')[0];
-};
-
-// Helper function to get icon for category
+// Emoji icon (kept as-is)
 const getCategoryIcon = (categoryName: string) => {
   const iconMap: { [key: string]: string } = {
     fresh: '🌿',
     vegetables: '🥬',
     fruit: '🍎',
-    dairy: '🥛',
+    fish: '🐟',
     meat: '🥩',
+    dairy: '🥛',
     grains: '🌾',
     pantry: '🧂',
     seasonings: '🧂',
@@ -74,14 +93,15 @@ const getCategoryIcon = (categoryName: string) => {
   return iconMap[categoryName.toLowerCase()] || '🛒';
 };
 
-// Helper function to get Lucide icon component for category
+// Lucide icon map
 const getCategoryLucideIcon = (categoryName: string) => {
   const iconMap: { [key: string]: { component: any; color: string } } = {
     fresh: { component: Leaf, color: 'text-emerald-600' },
     vegetables: { component: Leaf, color: 'text-green-600' },
     fruit: { component: Apple, color: 'text-pink-600' },
-    dairy: { component: Milk, color: 'text-blue-600' },
+    fish: { component: Leaf, color: 'text-cyan-600' },
     meat: { component: Beef, color: 'text-red-600' },
+    dairy: { component: Milk, color: 'text-blue-600' },
     grains: { component: Wheat, color: 'text-amber-600' },
     pantry: { component: ChefHat, color: 'text-purple-600' },
     seasonings: { component: ChefHat, color: 'text-purple-600' },
@@ -92,17 +112,28 @@ const getCategoryLucideIcon = (categoryName: string) => {
   return iconMap[categoryName.toLowerCase()] || { component: ShoppingBasket, color: 'text-gray-600' };
 };
 
+/* ------------------------------ Component ------------------------------ */
+
 export default function ShoppingList() {
   const { toast } = useToast();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
 
-  // Get week from URL params or default to current week being used in meal planner
-  const urlParams = new URLSearchParams(window.location.search);
-  const weekFromUrl = urlParams.get('week');
-  const [currentWeek, setCurrentWeek] = useState(weekFromUrl || getCurrentWeekMonday());
+  // Parse ?week=YYYY-MM-DD from the URL using Wouter location (not window.location)
+  const weekFromUrl = useMemo(() => {
+    const u = new URL(location, window.location.origin);
+    return u.searchParams.get("week") ?? undefined;
+  }, [location]);
+
+  // Anchor state to URL or fallback to current Monday
+  const [currentWeek, setCurrentWeek] = useState<string>(weekFromUrl || getCurrentWeekMonday());
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  
-  // Get added pantry items from localStorage or URL params
+
+  // Keep state and URL in sync if user navigates directly to a different ?week=
+  if (weekFromUrl && weekFromUrl !== currentWeek) {
+    setCurrentWeek(weekFromUrl);
+  }
+
+  // Get added pantry items from localStorage scoped to the current week
   const getAddedPantryItems = () => {
     try {
       const stored = localStorage.getItem(`addedPantryItems_${currentWeek}`);
@@ -111,7 +142,7 @@ export default function ShoppingList() {
       return [];
     }
   };
-  
+
   const [addedPantryItems] = useState<string[]>(getAddedPantryItems());
 
   const { data: shoppingList, isLoading } = useQuery<ShoppingListData>({
@@ -128,16 +159,15 @@ export default function ShoppingList() {
       }
       return response.json();
     },
+    staleTime: 0,
+    refetchOnMount: "always",
     retry: false,
   });
 
   const handleItemCheck = (itemName: string, checked: boolean) => {
     const newCheckedItems = new Set(checkedItems);
-    if (checked) {
-      newCheckedItems.add(itemName);
-    } else {
-      newCheckedItems.delete(itemName);
-    }
+    if (checked) newCheckedItems.add(itemName);
+    else newCheckedItems.delete(itemName);
     setCheckedItems(newCheckedItems);
   };
 
@@ -146,6 +176,8 @@ export default function ShoppingList() {
     const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
     if (newWeek >= earliestWeek) {
       setCurrentWeek(newWeek);
+      // keep URL shareable
+      setLocation(`/shopping-list?week=${newWeek}`);
     }
   };
 
@@ -154,10 +186,12 @@ export default function ShoppingList() {
     const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
     if (newWeek <= latestWeek) {
       setCurrentWeek(newWeek);
+      // keep URL shareable
+      setLocation(`/shopping-list?week=${newWeek}`);
     }
   };
 
-  // Check if navigation buttons should be disabled
+  // Disable buttons at bounds
   const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
   const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
 
@@ -183,7 +217,7 @@ export default function ShoppingList() {
     try {
       await navigator.clipboard.writeText(shareText);
       toast({ title: "Shopping list copied to clipboard!" });
-    } catch (error) {
+    } catch {
       toast({ title: "Failed to copy to clipboard", variant: "destructive" });
     }
   };
@@ -224,16 +258,14 @@ export default function ShoppingList() {
     );
   }
 
-  const CategoryCard = ({ title, items, icon, iconColor }: { 
-    title: string; 
-    items: ShoppingListItem[]; 
-    icon: React.ComponentType<any>; 
-    iconColor: string 
+  const CategoryCard = ({ title, items, icon, iconColor }: {
+    title: string;
+    items: ShoppingListItem[];
+    icon: React.ComponentType<any>;
+    iconColor: string;
   }) => {
     if (items.length === 0) return null;
-
     const IconComponent = icon;
-
     return (
       <Card>
         <CardContent className="p-6">
@@ -250,13 +282,7 @@ export default function ShoppingList() {
                     onCheckedChange={(checked) => handleItemCheck(item.name, checked as boolean)}
                     className="mr-3"
                   />
-                  <span
-                    className={`${
-                      checkedItems.has(item.name)
-                        ? "line-through text-slate-500"
-                        : "text-slate-800"
-                    }`}
-                  >
+                  <span className={`${checkedItems.has(item.name) ? "line-through text-slate-500" : "text-slate-800"}`}>
                     {item.name}
                   </span>
                 </div>
@@ -291,7 +317,9 @@ export default function ShoppingList() {
               <span className="sm:hidden">Share</span>
             </Button>
           </div>
-          <span className="text-sm sm:text-lg font-medium text-slate-800 order-1 sm:order-2">{formatWeekRange(currentWeek)}</span>
+          <span className="text-sm sm:text-lg font-medium text-slate-800 order-1 sm:order-2">
+            {formatWeekRange(currentWeek)}
+          </span>
         </div>
       </div>
 
@@ -301,14 +329,13 @@ export default function ShoppingList() {
           .map(([categoryName, items]) => {
             const { component: IconComponent, color } = getCategoryLucideIcon(categoryName);
             const title = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
-            
             return (
-              <CategoryCard 
+              <CategoryCard
                 key={categoryName}
-                title={title} 
-                items={items as ShoppingListItem[]} 
-                icon={IconComponent} 
-                iconColor={color} 
+                title={title}
+                items={items as ShoppingListItem[]}
+                icon={IconComponent}
+                iconColor={color}
               />
             );
           })}

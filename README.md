@@ -7,7 +7,6 @@ A comprehensive weekly meal planning application built with React, Express.js, a
 - 📅 **Weekly Meal Planning**: Plan meals for each day of the week
 - 🛒 **Smart Shopping Lists**: Automatically generate categorized shopping lists
 - 🥘 **Recipe Management**: Full admin interface for managing 25+ recipes
-- 📦 **Pantry Management**: Track pantry items and stock levels
 - 📱 **Mobile Responsive**: Works perfectly on desktop and mobile devices
 - 📊 **Bulk Operations**: Import/export meals via JSON and CSV
 - 🎨 **Modern UI**: Beautiful interface built with shadcn/ui components

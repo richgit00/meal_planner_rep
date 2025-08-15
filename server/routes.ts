@@ -6,6 +6,9 @@ import { meals, mealPlans, cookedMeals } from "@shared/schema";
 import { insertMealPlanSchema, insertMealSchema, insertCookedMealSchema } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
+const YMD = /^\d{4}-\d{2}-\d{2}$/;
+
+
 export async function registerRoutes(app: Express): Promise<void> {
   // Meals
   app.get("/api/meals", async (req, res) => {
@@ -158,21 +161,36 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   app.get("/api/meal-plans/:weekStartDate", async (req, res) => {
-    try {
-      const mealPlan = await db.select().from(mealPlans).where(eq(mealPlans.weekStartDate, req.params.weekStartDate));
-      if (mealPlan.length === 0) {
-        return res.status(404).json({ message: "Meal plan not found" });
-      }
-      res.json(mealPlan[0]);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch meal plan" });
+  try {
+    const { weekStartDate } = req.params;
+    if (!YMD.test(weekStartDate)) {
+      return res.status(400).json({ message: "weekStartDate must be YYYY-MM-DD" });
     }
-  });
+
+    const result = await db
+      .select()
+      .from(mealPlans)
+      .where(eq(mealPlans.weekStartDate, weekStartDate))
+      .limit(1);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Meal plan not found" });
+    }
+    return res.json(result[0]);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch meal plan" });
+  }
+});
+
 
   app.post("/api/meal-plans", async (req, res) => {
     try {
       console.log("Creating meal plan with data:", req.body);
       const validated = insertMealPlanSchema.parse(req.body);
+      if (!YMD.test(validated.weekStartDate)) {
+  return res.status(400).json({ message: "weekStartDate must be YYYY-MM-DD" });
+}
+
       const mealPlanWithId = { ...validated, id: randomUUID() };
       const [mealPlan] = await db.insert(mealPlans).values(mealPlanWithId).returning();
       res.status(201).json(mealPlan);
@@ -269,21 +287,26 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // Shopping List Generation
-  app.get("/api/shopping-list/:weekStartDate", async (req, res) => {
-    try {
-      const mealPlanResult = await db.select().from(mealPlans).where(eq(mealPlans.weekStartDate, req.params.weekStartDate));
-      if (mealPlanResult.length === 0) {
-        return res.status(404).json({ message: "Meal plan not found" });
-      }
-      const mealPlan = mealPlanResult[0];
+  // =============================
+// SHOPPING LIST API ENDPOINT
+// Generates a shopping list for the given weekStartDate (YYYY-MM-DD) 
+// based on saved meal plans in the database, grouped by category, 
+// and returns a summary count. Pantry item functionality removed.
+// =============================
 
-      const mealsData = await db.select().from(meals);
+  const { data: shoppingList, isLoading } = useQuery<ShoppingListData>({
+  queryKey: ["/api/shopping-list", currentWeek],
+  queryFn: async () => {
+    const url = `/api/shopping-list/${currentWeek}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch shopping list");
+    return response.json();
+  },
+  staleTime: 0,
+  refetchOnMount: "always",
+  retry: false,
+});
 
-      const selectedMeals = mealPlan.meals
-        .filter(day => day.mealId)
-        .map(day => mealsData.find(meal => meal.id === day.mealId))
-        .filter(meal => meal && meal.ingredients);
 
       // Aggregate ingredients by name and category
       const ingredientMap = new Map<string, { quantity: string; category: string }>();
