@@ -30,16 +30,16 @@ function ymdLocal(d: Date) {
   return `${y}-${m}-${day}`;
 }
 
-// Helper function to get the current week's Monday (LOCAL, week starts Monday)
-const getCurrentWeekMonday = () => {
+// Helper function to get the current week's Saturday (LOCAL, week starts Saturday)
+const getCurrentWeekSaturday = () => {
   const today = new Date();
   // Normalise to midday to avoid DST edges shifting the date
   today.setHours(12, 0, 0, 0);
   const dayOfWeek = today.getDay(); // Sun=0, Mon=1, ... Sat=6
-  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // move back to Monday
-  const monday = new Date(today);
-  monday.setDate(diff);
-  return ymdLocal(monday);
+  const diff = (dayOfWeek + 1) % 7; // days since Saturday
+  const saturday = new Date(today);
+  saturday.setDate(today.getDate() - diff);
+  return ymdLocal(saturday);
 };
 
 // Helper functions for week navigation (LOCAL)
@@ -124,8 +124,8 @@ export default function ShoppingList() {
     return u.searchParams.get("week") ?? undefined;
   }, [location]);
 
-  // Anchor state to URL or fallback to current Monday
-  const [currentWeek, setCurrentWeek] = useState<string>(weekFromUrl || getCurrentWeekMonday());
+  // Anchor state to URL or fallback to current Saturday
+  const [currentWeek, setCurrentWeek] = useState<string>(weekFromUrl || getCurrentWeekSaturday());
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
   // Keep state and URL in sync if user navigates directly to a different ?week=
@@ -173,7 +173,7 @@ export default function ShoppingList() {
 
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
-    const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
+    const earliestWeek = addWeeks(getCurrentWeekSaturday(), -26);
     if (newWeek >= earliestWeek) {
       setCurrentWeek(newWeek);
       // keep URL shareable
@@ -183,7 +183,7 @@ export default function ShoppingList() {
 
   const goToNextWeek = () => {
     const newWeek = addWeeks(currentWeek, 1);
-    const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
+    const latestWeek = addWeeks(getCurrentWeekSaturday(), 4);
     if (newWeek <= latestWeek) {
       setCurrentWeek(newWeek);
       // keep URL shareable
@@ -192,8 +192,8 @@ export default function ShoppingList() {
   };
 
   // Disable buttons at bounds
-  const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
-  const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
+  const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekSaturday(), -26);
+  const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekSaturday(), 4);
 
   const handleShareList = async () => {
     if (!shoppingList) return;
@@ -350,3 +350,4 @@ export default function ShoppingList() {
     </div>
   );
 }
+
