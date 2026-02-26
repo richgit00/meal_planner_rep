@@ -43,8 +43,8 @@ const getWeekDates = (weekStartDate: string) => {
       "July","August","September","October","November","December"
     ];
 
-    // Fixed Monday-first labels
-    const dayName = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][i];
+    // Fixed Saturday-first labels
+    const dayName = ["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday"][i];
 
     days.push({
       name: dayName,
@@ -84,15 +84,15 @@ const addWeeks = (dateString: string, weeks: number) => {
   return ymdLocal(date);
 };
 
-// Get the current week's Monday in LOCAL time
-const getCurrentWeekMonday = () => {
+// Get the current week's Saturday in LOCAL time
+const getCurrentWeekSaturday = () => {
   const today = new Date();
   today.setHours(12, 0, 0, 0); // avoid DST/clock edges
   const dayOfWeek = today.getDay(); // Sun=0, Mon=1, ... Sat=6
-  const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // move back to Monday
-  const monday = new Date(today);
-  monday.setDate(diff);
-  return ymdLocal(monday);
+  const diff = (dayOfWeek + 1) % 7; // days since Saturday
+  const saturday = new Date(today);
+  saturday.setDate(today.getDate() - diff);
+  return ymdLocal(saturday);
 };
 
 /* ------------------------------ Component ------------------------------ */
@@ -104,9 +104,9 @@ export default function MealPlan() {
   const [showMealModal, setShowMealModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-  const [currentWeek, setCurrentWeek] = useState(getCurrentWeekMonday());
+  const [currentWeek, setCurrentWeek] = useState(getCurrentWeekSaturday());
 
-  // Debug: ensure we're anchored to Monday locally (e.g., 2025-08-11)
+  // Debug: ensure we're anchored to Saturday locally
   // console.log("Computed currentWeek (local):", currentWeek);
 
   /* ------------------------------ Queries ------------------------------ */
@@ -245,13 +245,13 @@ export default function MealPlan() {
 
   const goToPreviousWeek = () => {
     const newWeek = addWeeks(currentWeek, -1);
-    const earliestWeek = addWeeks(getCurrentWeekMonday(), -26);
+    const earliestWeek = addWeeks(getCurrentWeekSaturday(), -26);
     if (newWeek >= earliestWeek) setCurrentWeek(newWeek);
   };
 
   const goToNextWeek = () => {
     const newWeek = addWeeks(currentWeek, 1);
-    const latestWeek = addWeeks(getCurrentWeekMonday(), 4);
+    const latestWeek = addWeeks(getCurrentWeekSaturday(), 4);
     if (newWeek <= latestWeek) setCurrentWeek(newWeek);
   };
 
@@ -270,8 +270,8 @@ export default function MealPlan() {
     }
   };
 
-  const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekMonday(), -26);
-  const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekMonday(), 4);
+  const isPreviousDisabled = currentWeek <= addWeeks(getCurrentWeekSaturday(), -26);
+  const isNextDisabled = currentWeek >= addWeeks(getCurrentWeekSaturday(), 4);
 
   const handleGenerateShoppingList = async () => {
     const hasPlannedMeals = currentMeals.some((dayMeal) => dayMeal.mealId);
@@ -431,3 +431,4 @@ export default function MealPlan() {
     </div>
   );
 }
+
